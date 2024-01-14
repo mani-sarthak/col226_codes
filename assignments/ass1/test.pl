@@ -100,3 +100,9 @@ mem((X, Z), refTransClose(R, S)) :- mem((X, Y), R), mem((Y, Z), refTransClose(R,
 Equivalence Closure -- Union of Reflexive Transitive Closure and its inverse. */
 
 mem((X, Y), equiClose(R, S)) :- mem((X, Y), refTransClose(R, S)); mem((Y, X), refTransClose(R, S)).
+
+
+
+mom((X,Y), transclos(R)) :- mem((X,Y), R), !. 
+mom((X,Y), transclos([])) :- fail.
+mom((X,Z), transclos(R)) :- mem((X,Y), R), del((X,Y),R,M), mom((Y,Z),transclos(M)).
