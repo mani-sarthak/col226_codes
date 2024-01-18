@@ -1,7 +1,20 @@
+/* HELPER FUNCTIONS */
+
 /* To check membership of X in a given list */
 mem(X, []) :- false.
 mem(X, [X|_]).
 mem(X, [_|T]) :- mem(X, T).
+
+
+/* append(L1, L2, L3) -- append lis  L1 to list L2 to get list  L3 */
+append( [ ], L, L).
+append( [X|R], L, [X|Z]) :- append(R, L, Z).
+
+
+/*  del(X,L1,L2) -- delete element X from a list L1 to obtain L2 */ 
+del(X, [ ] , [ ]) :- !.
+del(X, [X|R], Z) :- del(X, R, Z), !.
+del(X, [Y|R], [Y|Z]) :- del(X, R, Z), !.
 
 
 
@@ -15,12 +28,12 @@ mem((X, Y), refTransClosureHelper(R, S), Visited) :-
     mem(X, S), 
     mem(Y, S), 
     mem((X, Y), R), 
-    \+ mem((X, Y), Visited), write(([0],X, Y)), !.
+    \+ mem((X, Y), Visited), !.
 mem((X, Z), refTransClosureHelper(R, S), Visited) :- 
     mem(X, S), 
     mem(Z, S),
     mem((X, Y), R), 
-    \+ mem((X, Y), Visited), write((X, Y)),
+    \+ mem((X, Y), Visited),
     mem((Y, Z), refTransClosureHelper(R, S), [(X, Y)|Visited]), !.
     
 mem((X, Y), reflexive_transitive_closure(R, S)) :- mem((X, Y), refTransClosureHelper(R, S), []).
@@ -28,12 +41,23 @@ mem((X, Y), reflexive_transitive_closure(R, S)) :- mem((X, Y), refTransClosureHe
 
 /* Part A.2 reflexive symetric transitive closure over a relation R amd a set S*/
 
-/* To check membership of a relation (a, b) in equivalence_closure of R and S */
+
+/* generate the Symmetric closure of a set (without duplicates) */
+generateInverse([], []).
+generateInverse([(X, X)|R], S) :- generateInverse(R, S).
+generateInverse([(X, Y)|R], [(Y, X)|S]) :- generateInverse(R, S).
+
+generateSymetricClosure(R, S) :-  generateInverse(R, L), append(R, L, S).
+
+
+/* To check membership of a relation (a, b) in equivalence_closure of R and S
+    find the symmetric closure of R and say it SymR. Then search for the member in the 
+    reflexive transitive close of the 
+ */
+
 mem((X, Y), reflexive_symetric_transitive_closure(R, S)) :- 
-    mem((X, Y), reflexive_transitive_closure(R, S));
-    mem((Y, X), reflexive_transitive_closure(R, S)).
-
-
+    generateSymetricClosure(R, SymR),
+    mem((X, Y), reflexive_transitive_closure(SymR, S)).
 
 
 
@@ -104,7 +128,7 @@ Apart from that it is taking the union of the sets (without guarantee on the dup
 
 B.2 
 
-From above we see that unionI(_, _, _) HAVE DUPLICATES !!
+From above we see that unionI(_, _, _) CAN HAVE DUPLICATES (if the input lists have duplicates)!!
 */
 
 /*
@@ -134,9 +158,6 @@ Since the sets contain distinct elements we iterate for every element in the sec
 delete it from the first set (if exists) using del(X, L1, L2) */
 
 
-del(X, [ ] , [ ]) :- !.
-del(X, [X|R], Z) :- del(X, R, Z), !.
-del(X, [Y|R], [Y|Z]) :- del(X, R, Z), !.
 
 diffI(L, [], L) :- !.
 diffI(L1, [X|S], L2) :- diffI(L1, S, L3),  del(X, L3, L2). 
@@ -148,33 +169,48 @@ diffI(L1, [X|S], L2) :- diffI(L1, S, L3),  del(X, L3, L2).
 B.5 cartesianI(S1, S2, S3) -- returns the cartesian product of sets S1 and S2 in S3
 */
 
-
-/* mapcons(X,L1, L2) --  cons the element X to each list in L1 to get L2 */
-mapcons(X, [ ], [ ]) :- !.
-mapcons(X, [Y|R], [ [X|Y] | Z ]) :- mapcons(X, R, Z).
-
-
-/* append(L1, L2, L3) -- append lis  L1 to list L2 to get list  L3 */
-append( [ ], L, L).
-append( [X|R], L, [X|Z]) :- append(R, L, Z).
+cartesianHelper(X, [ ], [ ]) :- !.
+cartesianHelper(X, [Y|R], [ (X, Y) | Z ]) :- cartesianHelper(X, R, Z).
 
 
 /*      S x 0 = 0 = 0 x S, where 0 is empty set {}      */
-cartesianl(S, [], []) :- !.
-cartesianl([], S, []) :- !.
+cartesianI(S, [], []) :- !.
+cartesianI([], S, []) :- !.
 
 /*   Using the first element in the first list  with the second 
-list get the members of the cartesian product in S4 using mapcons(X, S2, S4). 
+list get the members of the cartesian product in S4 using cartesianHelper(X, S2, S4). 
 
 Recursively compute the rest members of the cartesian product apart 
 from the elements from the first list for which already computed and then append the result in S3. */
 
-cartesianl([X|S1], S2, S3) :- mapcons(X, S2, S4), cartesianl(S1, S2, S5), append(S4, S5, S3).
+cartesianI([X|S1], S2, S3) :- cartesianHelper(X, S2, S4), cartesianI(S1, S2, S5), append(S4, S5, S3).
 
 
 /*
 B.6 Testcases for validation 
 
+
+interI([], [1, 2], L).              L = []
+interI([a, b], [], L).              L = []
+interI([3, 4], [4, 5], L).          L = [4]
+interI([3,4,7,8],[4,5,6,7,3],L).    L = [4,7,3]
+
+
+diffI([],[4,5,6,7,3],L).            L = []
+diffI([8, 7, 1], [], L).            L = [8,7,1]
+diffI([3],[4,5,6,7,3],L).           L = []
+diffI([3,4,7,8,6],[4,5,6,7,3],L).   L = [8]
+diffI([8],[4,5,6,7,3],L).           L = [8]
+diffI([8,7,1],[1,7],L).             L = [8]
+
+
+cartesianI([1, 2, 3], [], L).       L = []
+cartesianI([],[a, b, c], L).        L = []
+cartesianI([1], [a, b, c], L).      L = [(1,a),(1,b),(1,c)]
+cartesianI([1,2],[a,b,c],L).        L = [(1,a),(1,b),(1,c),(2,a),(2,b),(2,c)]
+cartesianI([1,2,3],[a,b,c],L).      L = [(1,a),(1,b),(1,c),(2,a),(2,b),(2,c),(3,a),(3,b),(3,c)]
+cartesianI([1, 2, 3], [[]], L).     L = [(1,[]),(2,[]),(3,[])]
+cartesianI([[]], [a, b, c]).        L = [([],a),([],b),([],c)]
 
 */
 
@@ -182,11 +218,18 @@ B.6 Testcases for validation
 /*
 
 B.7 Given a code to generate the powerSet of a list, and we have to check that powerSet of different 
-implementaions of a set (same numbers, ordered diffrenetly and no duplicates) are the same.
+implementaions of a set (same elements, ordered diffrenetly and no duplicates) are the same.
 
 We first sort the sets (lists) since we have no duplicates  in both of them, after sorting 
-the two lists will be ordered, now by 1-1 mapping from the powerSet generator function, we can check that
-both of the lists will give the same output IF AND ONLY IF they have the same elements in them (they are equal). 
+the two lists will be ordered and exactly the same, now by 1-1 mapping from the powerSet generator function, we can check that
+both of the Power Sets will be the same output (they were generated using the same input and same generator function) . 
+
+EXAMPLE:
+powerI( [2, 1, 3], L).          L = [[2,1,3],[2,1],[2,3],[2],[1,3],[1],[3],[]]
+powerI( [3, 2, 1], L).          L = [[3,2,1],[3,2],[3,1],[3],[2,1],[2],[1],[]]
+
+sorting both [2, 1, 3] and [3, 2, 1] would result in [1, 2, 3], and now both will give the same output as below.
+powerI( [1, 2, 3], L).          L = [[1,2,3],[1,2],[1,3],[1],[2,3],[2],[3],[]]
 */
 
 
