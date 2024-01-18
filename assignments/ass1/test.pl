@@ -1,7 +1,7 @@
 % We are specifuing here and not implememting !
 
 mem(X, []) :- false.
-mem(X, [X|_]) :- !. % as soon as it finds out element returns !
+mem(X, [X|_]). % as soon as it finds out element returns !
 mem(X, [_|T]) :- mem(X, T).
 
 
@@ -21,15 +21,6 @@ remdups([X|R], [X|Z]) :- del(X, R, L), remdups(L, Z).
 
 
 
-/* Assuming no duplicates in S1, S2
-
- here is an implementation of union of S1, S2 */
-
-unionI([ ], S2, S2) :- !.
-unionI(S1, [ ], S1) :- !.
-unionI([X|R], S2, [X|Z]) :- del(X, S2, S3),  unionI(R, S3, Z).
-
-  
 
 /* append(L1, L2, L3) -- append lis  L1 to list L2 to get list  L3 */
 
@@ -42,6 +33,16 @@ append( [X|R], L, [X|Z]) :- append(R, L, Z).
 
 mapcons(X, [ ], [ ]) :- !.
 mapcons(X, [Y|R], [ [X|Y] | Z ]) :- mapcons(X, R, Z).
+
+
+
+/* Assuming no duplicates in S1, S2
+
+ here is an implementation of union of S1, S2 */
+
+unionI([ ], S2, S2) :- !.
+unionI(S1, [ ], S1) :- !.
+unionI([X|R], S2, [X|Z]) :- del(X, S2, S3),  unionI(R, S3, Z).
 
 /* powerI( S, P1): Here is an implementation of powerset of S */
 
@@ -91,18 +92,52 @@ inter(S1, [X|S2], S3) :- \+ mem(X, S1), inter(S1, S2, S3).
 
 /* Reflexive - Transitive Closure */
 
-mem((X, X), refTransClose(R, S)) :- mem(X, S), !.
-mem((X, Y), refTransClose(R, S)) :- mem((X, Y), R), !.
-mem((X, Z), refTransClose(R, S)) :- mem((X, Y), R), mem((Y, Z), refTransClose(R, S)), !.
+% mem((X, X), refTransClose(R, S)) :- mem(X, S), !.
+% mem((X, Y), refTransClose(R, S)) :- mem((X, Y), R), !.
+% mem((X, Z), refTransClose(R, S)) :- mem((X, Y), R), mem((Y, Z), refTransClose(R, S)), !.
 
-/* Reflexive - Transitive - Symetric Closure or Equivalence Closure 
-
-Equivalence Closure -- Union of Reflexive Transitive Closure and its inverse. */
-
-mem((X, Y), equiClose(R, S)) :- mem((X, Y), refTransClose(R, S)); mem((Y, X), refTransClose(R, S)).
 
 
 
 mom((X,Y), transclos(R)) :- mem((X,Y), R), !. 
 mom((X,Y), transclos([])) :- fail.
 mom((X,Z), transclos(R)) :- mem((X,Y), R), del((X,Y),R,M), mom((Y,Z),transclos(M)).
+
+
+
+
+
+/* from here gpt*/
+
+mem((X, X), refTransClose(R, S), _) :- mem(X, S).
+mem((X, Y), refTransClose(R, S), Visited) :- 
+    mem(X, S), 
+    mem(Y, S),
+    mem((X, Y), R), 
+    \+ member((X, Y), Visited).
+mem((X, Z), refTransClose(R, S), Visited) :- 
+    mem(X, S),
+    mem(Z, S),
+    mem((X, Y), R), 
+    \+ member((X, Y), Visited), 
+    mem((Y, Z), refTransClose(R, S), [(X, Y)|Visited]).
+mem((X, Z), refTransClose(R, S)) :- mem((X, Z), refTransClose(R, S), []).
+
+
+% mem((2, 1), refTransClose([(1, 2)], [1, 2])).
+% mem((2, 1), refTransClose([(1, 2), (1, 3), (3, 4), (4, 1)], [1, 2, 4, 3])).
+% mem((1, 1), refTransClose([(1, 2), (1, 3), (3, 4), (4, 1)], [1, 2, 4, 3])).
+% mem((2, 1), refTransClose([(1, 2), (1, 3), (3, 4), (4, 1)], [1, 2, 4, 3])).
+% mem((1, 4), refTransClose([(1, 2), (1, 3), (3, 4), (2, 1)], [1, 2, 3, 4])).
+
+/* Reflexive - Transitive - Symetric Closure or Equivalence Closure 
+
+Equivalence Closure -- Union of Reflexive Transitive Closure and its inverse. */
+
+% mem((X, Y), equiClose(R, S)) :- mem((X, Y), refTransClose(R, S)); mem((Y, X), refTransClose(R, S)).
+
+
+/* Transitive Closure */
+mem((X,Y), transclos(R), Vis) :- mem((X,Y), R), \+ mem((X, Y), Vis), !.
+mem((X,Z), transclos(R), Vis) :- mem((X,Y), R), \+ mem((X, Y), Vis), 
+mem((Y,Z), transclos(R), [(X, Y)|Vis]), !.
