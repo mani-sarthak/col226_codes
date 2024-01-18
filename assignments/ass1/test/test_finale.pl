@@ -223,16 +223,60 @@ cartesianI([[]], [a, b, c]).        L = [([],a),([],b),([],c)]
 B.7 Given a code to generate the powerSet of a list, and we have to check that powerSet of different 
 implementaions of a set (same elements, ordered diffrenetly and no duplicates) are the same.
 
-We first sort the sets (lists) since we have no duplicates  in both of them, after sorting 
-the two lists will be ordered and exactly the same, now by 1-1 mapping from the powerSet generator function, we can check that
-both of the Power Sets will be the same output (they were generated using the same input and same generator function) . 
+
+ASSUMPTION : This method only works on simple sets with unordered elements and not on set of sets !
+
+
+IDEA : Check membership of lists to check for equality rather than directly matching the lists. 
+(This will get rid of the problems caused by ordering)
+Once that is done now search element by element of one powerset say P1 into P2 using the membership above.
+This will claim that P1 is a subset of P2.
+Similarly check for each member of P2 search its membership in P1. This will claim P2 is a subset of P1.
+
+Hence we can show that P1 = P2.
+
 
 EXAMPLE:
-powerI( [2, 1, 3], L).          L = [[2,1,3],[2,1],[2,3],[2],[1,3],[1],[3],[]]
-powerI( [3, 2, 1], L).          L = [[3,2,1],[3,2],[3,1],[3],[2,1],[2],[1],[]]
+powerI( [2, 1, 3], P1).          P1 = [[2,1,3],[2,1],[2,3],[2],[1,3],[1],[3],[]]
+powerI( [3, 2, 1], P2).          P2 = [[3,2,1],[3,2],[3,1],[3],[2,1],[2],[1],[]]
 
-sorting both [2, 1, 3] and [3, 2, 1] would result in [1, 2, 3], and now both will give the same output as below.
-powerI( [1, 2, 3], L).          L = [[1,2,3],[1,2],[1,3],[1],[2,3],[2],[3],[]]
+We observe that [2, 1, 3] != [3, 2, 1] by directly matching them, but when we look for membership we 
+can say that they are exactly the same. Doing that for each member in P1 first and then for P2 gives P1 = p2.
+
+
+
+The following code shows the implementation.
+
+mem(X, []) :- false.
+mem(X, [X|_]).
+mem(X, [_|T]) :- mem(X, T).
+
+
+del(X, [ ] , [ ]) :- !.
+del(X, [X|R], Z) :- del(X, R, Z), !.
+del(X, [Y|R], [Y|Z]) :- del(X, R, Z), !.
+
+
+same_set([], []).
+same_set([H|T], List) :- 
+	mem(H, List), del(H, List, Rest),
+    same_set(T, Rest).
+    
+belongs_to_powerset(_, []) :- fail.
+belongs_to_powerset([], _).
+belongs_to_powerset(H, [Head|Tail]) :- 
+    same_set(H, Head); belongs_to_powerset(H, Tail).
+
+    
+subset_of_powerset([], _).
+subset_of_powerset([H|T], Powerset) :-
+    belongs_to_powerset(H, Powerset),
+    subset_of_powerset(T, Powerset).
+    
+powerset_equal(Powerset1, Powerset2) :-
+    subset_of_powerset(Powerset1, Powerset2),
+    subset_of_powerset(Powerset2, Powerset1).
+
 */
 
 
