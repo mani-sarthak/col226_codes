@@ -16,7 +16,11 @@ del(X, [ ] , [ ]) :- !.
 del(X, [X|R], Z) :- del(X, R, Z), !.
 del(X, [Y|R], [Y|Z]) :- del(X, R, Z), !.
 
-
+/* same_set(S1, S2) -- verifies set equality among the sets S1 and S2*/
+same_set([], []).
+same_set([H|T], List) :- 
+	mem(H, List), del(H, List, Rest),
+    same_set(T, Rest).
 
 /* Part A.1 reflexive transitive closure over a relation R amd a set S*/
 /*  
@@ -134,25 +138,40 @@ B.2
 From above we see that unionI(_, _, _) CAN HAVE DUPLICATES (if the input lists have duplicates)!!
 */
 
+
+
 /*
-B.3 interI(S1, S2, S3) -- computes the intersection of the sets S1 and S2 and puts the result in S3.
+
+ADJUSTMENTS !!
+For parts B.3 to B.5 adjustments were made in last time because of Vaishnavi mam's pst in announcement
+that says that in unionI(S1, S2, S3), cartesianI(S1, S2, S3) and diffI(S1, S2, S3) all S1, S2 and S3
+are given and we have to check that S3 is the indeed the right reprensentaion (without ordering).
+Otherwise the previous version of the code was that these would produce the answer in S3. Can see the 
+examples in B.6 for example where the values were assigned to the list L.
+
+*/
+
+
+
+/*
+B.3 interHelper(S1, S2, S3) -- computes the intersection of the sets S1 and S2 and puts the result in S3.
 */
 
 
 /* Intersection with empty set results in an empty set. */
-interI(S, [], []) :- !.
-interI([], S, []) :- !.
+interHelper(S, [], []) :- !.
+interHelper([], S, []) :- !.
 
 /* If there is a common member between the sets S1 and S2 then add that to the result S3 */
-interI(S1, [X|S2], [X|S3]) :- mem(X, S1), interI(S1, S2, S3).
+interHelper(S1, [X|S2], [X|S3]) :- mem(X, S1), interHelper(S1, S2, S3).
 
 /* If the top element X of second set is not in the first set then it is not a common member among the sets and hence we dont consider it in our final answer */
-interI(S1, [X|S2], S3) :- \+ mem(X, S1), interI(S1, S2, S3).
+interHelper(S1, [X|S2], S3) :- \+ mem(X, S1), interHelper(S1, S2, S3).
 
-
+interI(S1, S2, S3) :- interHelper(S1, S2, Intersection), same_set(Intersection, S3).
 
 /*
-B.4 diffI(S1, S2, S3) -- computes the set differnce of S2 from S1 and puts the result in S3 
+B.4 diffHelper(S1, S2, S3) -- computes the set differnce of S2 from S1 and puts the result in S3 
 */
 
 
@@ -162,23 +181,23 @@ delete it from the first set (if exists) using del(X, L1, L2) */
 
 
 
-diffI(L, [], L) :- !.
-diffI(L1, [X|S], L2) :- diffI(L1, S, L3),  del(X, L3, L2). 
-
+diffHelper(L, [], L) :- !.
+diffHelper(L1, [X|S], L2) :- diffHelper(L1, S, L3),  del(X, L3, L2). 
+diffI(S1, S2, S3) :- diffHelper(S1, S2, SetDiff), same_set(SetDiff, S3).
 
 
 
 /*
-B.5 cartesianI(S1, S2, S3) -- returns the cartesian product of sets S1 and S2 in S3
+B.5 cartesianGenerate(S1, S2, S3) -- returns the cartesian product of sets S1 and S2 in S3
 */
 
-cartesianHelper(X, [ ], [ ]) :- !.
-cartesianHelper(X, [Y|R], [ (X, Y) | Z ]) :- cartesianHelper(X, R, Z).
+cartesianGenerateHelper(X, [ ], [ ]) :- !.
+cartesianGenerateHelper(X, [Y|R], [ (X, Y) | Z ]) :- cartesianGenerateHelper(X, R, Z).
 
 
 /*      S x 0 = 0 = 0 x S, where 0 is empty set {}      */
-cartesianI(S, [], []) :- !.
-cartesianI([], S, []) :- !.
+cartesianGenerate(S, [], []) :- !.
+cartesianGenerate([], S, []) :- !.
 
 /*   Using the first element in the first list  with the second 
 list get the members of the cartesian product in S4 using cartesianHelper(X, S2, S4). 
@@ -186,8 +205,8 @@ list get the members of the cartesian product in S4 using cartesianHelper(X, S2,
 Recursively compute the rest members of the cartesian product apart 
 from the elements from the first list for which already computed and then append the result in S3. */
 
-cartesianI([X|S1], S2, S3) :- cartesianHelper(X, S2, S4), cartesianI(S1, S2, S5), append(S4, S5, S3).
-
+cartesianGenerate([X|S1], S2, S3) :- cartesianGenerateHelper(X, S2, S4), cartesianGenerate(S1, S2, S5), append(S4, S5, S3).
+cartesianI(S1, S2, S3) :- cartesianGenerate(S1, S2, Cartesian), same_set(Cartesian, S3).
 
 /*
 B.6 Testcases for validation 
