@@ -299,3 +299,28 @@ powerset_equal(Powerset1, Powerset2) :-
 */
 
 
+
+
+
+
+
+/*
+
+
+interHelper([1,2],[],X).
+interHelper([2,3,4],[2,3],X).
+interHelper([3,2,1],[4,3,2,0],X).
+diffHelper([],[3,4,5],X).
+diffHelper([3,4],[5],X).
+diffHelper([4,5,6],[6,4],X).
+cartesianGenerate([],[a,b],X).
+cartesianGenerate([1,2],[a,b],X).
+cartesianGenerate([],[],X).
+mem((1, 4), reflexive_transitive_closure([(1, 2), (2, 3), (3, 4)], [1,2,3,4])).
+mem((1, 1), reflexive_transitive_closure([(1, 2), (2, 3), (3, 4)], [1,2,3,4])).
+mem((a,a), reflexive_symetric_transitive_closure([], [a,c,d])).
+mem((b,b), reflexive_symetric_transitive_closure([], [a,c,d])).
+mem((d,a), reflexive_symetric_transitive_closure([(a,c), (a,d)], [a,c,d])).
+mem((a,d), reflexive_symetric_transitive_closure([(c,d), (a,c)], [a,c,d])).
+
+*/
