@@ -1,4 +1,4 @@
-(* Define the token types *)
+(* Token types *)
 type token =
   | Identifier of string
   | Keyword of string
@@ -14,7 +14,7 @@ type token =
 (* Exception for unrecognized tokens *)
 exception Unknown_token of string
 
-(* Manually classify a string as a token *)
+(* Classify a string as a token *)
 let classify_token str =
   match str with
   | "if" | "then" | "else" | "let" | "pair" | "fst" | "snd" -> Keyword str
@@ -25,8 +25,6 @@ let classify_token str =
   | "=" | "!=" | ">" | "<" | ">=" | "<=" -> ComparisonOp str
   | "(" | ")" -> Parenthesis str.[0]
   | "," -> Comma
-  (* | _ when str.[0] = '"' && str.[String.length str - 1] = '"' ->
-      StringLiteral (String.sub str 1 (String.length str - 2)) *)
   | _ when Str.string_match (Str.regexp "^\".*\"$") str 0 ->
     StringLiteral (String.sub str 1 (String.length str - 2))
   | _ when Str.string_match (Str.regexp "^[1-9][0-9]*$") str 0 || Str.string_match (Str.regexp "^0$") str 0 ->
@@ -35,34 +33,26 @@ let classify_token str =
       Identifier str
   | _ -> raise (Unknown_token str)
 
-(* Tokenize an input string *)
-(* Tokenize an input string to handle string literals correctly *)
+(* Tokenize a string *)
 let tokenize input =
   let rec aux acc i j =
     if j >= String.length input then
       if i < j then acc @ [classify_token (String.sub input i (j - i))]
       else acc
-    else
-      if input.[j] = '"' then (* Detect start of a string literal *)
-        let rec find_end_of_string k =
-          if k >= String.length input then
-            raise (Unknown_token "Unterminated string literal")
-          else if input.[k] = '"' && not (input.[k-1] = '\\') then (* Look for closing quote, ignoring escaped quotes *)
-            k
-          else
-            find_end_of_string (k + 1)
-        in
-        let end_idx = find_end_of_string (j + 1) in
-        let str_literal = String.sub input j (end_idx - j + 1) in
-        aux (acc @ [classify_token str_literal]) (end_idx + 1) (end_idx + 1)
-      else match input.[j] with
-        | ' ' | '\n' | '\t' -> 
-            if i < j then aux (acc @ [classify_token (String.sub input i (j - i))]) (j + 1) (j + 1)
-            else aux acc (j + 1) (j + 1)
-        | '+' | '-' | '*' | '/' | '=' | '!' | '>' | '<' | '(' | ')' | ',' -> 
-            let acc = if i < j then acc @ [classify_token (String.sub input i (j - i))] else acc in
-            aux (acc @ [classify_token (String.make 1 input.[j])]) (j + 1) (j + 1)
-        | _ -> aux acc i (j + 1)
+    else if input.[j] = '"' then 
+      let end_idx = try String.index_from input (j + 1) '"' with
+        | Not_found -> raise (Unknown_token "Unterminated string literal")
+      in
+      let str_literal = String.sub input j (end_idx - j + 1) in
+      aux (acc @ [classify_token str_literal]) (end_idx + 1) (end_idx + 1)
+    else match input.[j] with
+      | ' ' | '\n' | '\t' -> 
+          if i < j then aux (acc @ [classify_token (String.sub input i (j - i))]) (j + 1) (j + 1)
+          else aux acc (j + 1) (j + 1)
+      | '+' | '-' | '*' | '/' | '=' | '!' | '>' | '<' | '(' | ')' | ',' -> 
+          let acc = if i < j then acc @ [classify_token (String.sub input i (j - i))] else acc in
+          aux (acc @ [classify_token (String.make 1 input.[j])]) (j + 1) (j + 1)
+      | _ -> aux acc i (j + 1)
   in
   aux [] 0 0
 
@@ -101,7 +91,7 @@ let () =
     Printf.printf "Test case: %s\n" test_case;
     let tokens = tokenize test_case in
     List.iter print_token tokens;
-    print_endline "-----\n\n\n\n";
+    print_endline "\n\n\n\n";
   ) test_cases
 
 
