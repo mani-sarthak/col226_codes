@@ -11,3 +11,11 @@ Write a tokeniser in OCaml for the toy calculator (over the extended syntax for 
 Also compute the numbers that you recognize as part of the tokenisation process (as done with digit sequences in the class notes). Feel free to consider a token set that is larger than this, but it must subsume these tokens. Provide enough test cases to demonstrate the correctness of your tokeniser. 
 
 Submit a single file that contains your tokeniser and test cases as comments.
+
+
+
+Boolean operators & | etc not inc=volved 
+keywords : operation on tuples
+Identifier to incorporate for (Str.regexp "^[a-z_][a-zA-Z0-9']*$")  and not a fallback
+What the heck is string operators
+

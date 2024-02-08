@@ -15,17 +15,22 @@ exception Unknown_token of string
 
 (* Manually classify a string as a token *)
 let classify_token str =
+  let is_integer s =
+    try ignore (int_of_string s); true
+    with Failure _ -> false
+  in
   match str with
-  | "if" | "then" | "else" -> Keyword str
+  | "if" | "then" | "else" | "let" -> Keyword str
   | "true" -> Boolean true
   | "false" -> Boolean false
   | "+" | "-" | "*" | "/" -> ArithmeticOp str
   | "=" | "!=" | ">" | "<" | ">=" | "<=" -> ComparisonOp str
   | "(" | ")" -> Parenthesis str.[0]
   | "," -> Comma
-  | _ when String.length str > 0 && (str.[0] = '"' && str.[String.length str - 1] = '"') ->
+  | _ when str.[0] = '"' && str.[String.length str - 1] = '"' ->
       StringLiteral (String.sub str 1 (String.length str - 2))
-  | _ -> Identifier str  (* Default to Identifier if no other match is found *)
+  | _ when is_integer str -> Integer (int_of_string str)
+  | _ -> Identifier str  (* Identifier as a fallback *)
 
 (* Tokenize an input string *)
 let tokenize input =
@@ -46,7 +51,8 @@ let tokenize input =
 
 (* Example usage *)
 let () =
-  let input = "if x1 + 42 * (y2 - 3) = true then \"result\" else x1" in
+  let input = "if x1 + 42 * (y2 - 3) = true then \"result\" else x1, let x2 = \"mani\" " in
+  (* let input = "x1 + 42 * (y'2'_ - 3 ) = (true & false)" in *)
   let tokens = tokenize input in
   List.iter (fun token ->
     match token with
@@ -60,5 +66,3 @@ let () =
     | Parenthesis p -> Printf.printf "Parenthesis: %c\n" p
     | Comma -> Printf.printf "Comma\n"
   ) tokens
-
-  
