@@ -57,7 +57,7 @@ let tokenize input =
   aux [] 0 0
 
 
-(* Define a function to print tokens for testing *)
+(* Function to print tokens for testing *)
 let print_token = function
   | Identifier id -> Printf.printf "Identifier(%s)\n" id
   | Keyword kw -> Printf.printf "Keyword(%s)\n" kw

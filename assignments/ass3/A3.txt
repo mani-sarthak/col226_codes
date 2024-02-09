@@ -13,9 +13,4 @@ Also compute the numbers that you recognize as part of the tokenisation process 
 Submit a single file that contains your tokeniser and test cases as comments.
 
 
-
-Boolean operators & | etc not inc=volved 
-keywords : operation on tuples
-Identifier to incorporate for (Str.regexp "^[a-z_][a-zA-Z0-9']*$")  and not a fallback
 What the heck is string operators
-
