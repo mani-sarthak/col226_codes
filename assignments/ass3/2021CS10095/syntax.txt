@@ -1,0 +1,8 @@
+type exp = Num of int | Bl of myBool
+| V of string (* variables *)
+| Plus of exp * exp | Times of exp * exp
+| And of exp * exp | Or of exp * exp | Not of exp
+| Eq of exp * exp | Gt of exp * exp
+| IfTE of exp * exp * exp
+| Pair of exp * exp
+| Fst of exp | Snd of exp

@@ -1,0 +1,11 @@
+"if x1 + 42 * (y2 - 3) = true then \"result\" else x1";
+"pair(fst(x), snd(y)) && !false || true";
+"x' + y_2 - 10 >= 20";
+"\"Hello,world!\"";
+"1 + 1";
+"0";
+"if x1 + 49842 * (y2'__ - 3) = true then \"result\" else x1, let x2 = \"mani\" = \"sarthak\"  && false ";
+"x1 + 42 * (y'2'_ - 3 ) = (true && false) || pair";
+"\"Mani says \"\"Hello\"\" to Sarthak\" + 123";
+"let x = 123";
+"0123";

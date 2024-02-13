@@ -11,6 +11,7 @@ type token =
   | StringOp of string
   | Parenthesis of char
   | Comma
+  | Semicolon 
 
 (* Exception for unrecognized tokens *)
 exception Unknown_token of string
@@ -27,6 +28,7 @@ let classify_token str =
   | "^" -> StringOp str
   | "(" | ")" -> Parenthesis str.[0]
   | "," -> Comma
+  | ";" -> Semicolon  
   | _ when Str.string_match (Str.regexp "^\".*\"$") str 0 ->
       StringLiteral (String.sub str 1 (String.length str - 2))
   | _ when Str.string_match (Str.regexp "^[1-9][0-9]*$") str 0 || Str.string_match (Str.regexp "^0$") str 0 ->
@@ -48,10 +50,10 @@ let tokenize input =
       let str_literal = String.sub input j (end_idx - j + 1) in
       aux (acc @ [classify_token str_literal]) (end_idx + 1) (end_idx + 1)
     else match input.[j] with
-      | ' ' | '\n' | '\t' -> 
+      | ' ' | '\n' | '\t'  -> 
           if i < j then aux (acc @ [classify_token (String.sub input i (j - i))]) (j + 1) (j + 1)
           else aux acc (j + 1) (j + 1)
-      | '+' | '-' | '*' | '/' | '=' | '!' | '>' | '<' | '(' | ')' | ','-> 
+      | '+' | '-' | '*' | '/' | '=' | '!' | '>' | '<' | '(' | ')' | ',' | ';'-> 
           let acc = if i < j then acc @ [classify_token (String.sub input i (j - i))] else acc in
           aux (acc @ [classify_token (String.make 1 input.[j])]) (j + 1) (j + 1)
       | _ -> aux acc i (j + 1)
@@ -72,17 +74,21 @@ let print_token = function
   | StringOp op -> Printf.printf "StringOp(%s)\n" op
   | Parenthesis p -> Printf.printf "Parenthesis(%c)\n" p
   | Comma -> Printf.printf "Comma\n"
+  | Semicolon -> Printf.printf "Semicolon\n"
 
 (* Example test cases *)
 let test_cases = [
-  "let x = 123"
-  "if x1 + 42 * (y2 - 3) = 36 then \"result\" else x1";
+  "if x1 + 42 * (y2 - 3) = 36 then \"result\" else ; x1";
   "pair(fst(x), snd(y)) && !false || true";
   "x' + y_2 - 10 >= 20";
   "\"Hello,world!\"";
   "1 + 1";
   "0";
-  "let x = \"hello\" ^ \"world\" ";
+  "let x = \"hello\" ^ \"world\" ;;";
+  "if x1 + 49842 * (y2'__ - 3) = true then \"result\" else x1, let x2 = \"hello\" = \"world\"  && false ";
+  "x1 + 42 * (y'2'_ - 3 ) = (true && false) || pair";
+  "\"He says \"\"Hello\"\" to Him\" + 123";
+  "let x = 123 let y = ; \"hello\" ^ \" hello\" ; ";
 ]
 
 (* Tokenize and print tokens for each test case *)
@@ -93,18 +99,3 @@ let () =
     List.iter print_token tokens;
     print_endline "\n\n\n\n";
   ) test_cases
-
-
-
-
-(* "if x1 + 42 * (y2 - 3) = true then \"result\" else x1";
-"pair(fst(x), snd(y)) && !false || true";
-"x' + y_2 - 10 >= 20";
-"\"Hello,world!\"";
-"1 + 1";
-"0";
-"if x1 + 49842 * (y2'__ - 3) = true then \"result\" else x1, let x2 = \"hello\" = \"world\"  && false ";
-"x1 + 42 * (y'2'_ - 3 ) = (true && false) || pair";
-"\"He says \"\"Hello\"\" to Him\" + 123";
-"let x = 123 let y = \"hello\" ^ \" hello\" ; ";
-"0123"; *)
