@@ -3,6 +3,7 @@ open Types
 %}
 
 %token <string> ATOM VARIABLE
+%token <char> UNDEFINED
 %token DOT LPAREN RPAREN COMMA IMPLIES EOF
 %start program
 %type <Types.program> program

@@ -1,7 +1,7 @@
 {
   open Parser
   exception Error of string
-  let raise_error msg = raise (Error msg)
+  (* let raise_error msg = raise (Error msg) *)
 }
 
 rule token = parse
@@ -13,5 +13,5 @@ rule token = parse
   | ":-" { IMPLIES }
   | [ 'a'-'z' ] [ 'a'-'z' 'A'-'Z' '0'-'9' '_' ]* as lxm { ATOM(lxm) }
   | [ 'A'-'Z' ] [ 'a'-'z' 'A'-'Z' '0'-'9' '_' ]* as lxm { VARIABLE(lxm) }
-  | _ as char { raise_error (Printf.sprintf "Unexpected character: %c" char) }
+  | _ as x { UNDEFINED(x) }
   | eof { EOF }
