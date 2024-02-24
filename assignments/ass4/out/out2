@@ -1,0 +1,2 @@
+Rule (ancestor(Variable X, Variable Y), [parent(Variable X, Variable Y)])
+Parsed successfully.

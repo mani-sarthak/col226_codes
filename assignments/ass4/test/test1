@@ -1,0 +1,2 @@
+parent(bob, alice).
+parent(alice, charlie).

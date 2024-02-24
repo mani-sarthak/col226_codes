@@ -1,0 +1,27 @@
+parser for object language
+in ocamlyacc
+use assignment 1 & 2 
+assignment1 : basic functions of union, closure etc
+assignment2 : hastype functionality
+
+## objective 
+define grammar and lexical tokens
+
+## evaluation
+1. desing of syntax
+2. implementation of parser
+
+## submission
+define abstract syntax as datatype in OCaml (done in types.ml and types.mli)
+parser (executible ass) will give the output the AST
+
+
+## structure
+1. P -> C | CP; (A program is a sequence of clauses)
+2. C -> F | R;  (A clause can either be a fact or a rule)
+3. F -> H;
+4. R -> H B ;
+5. B -> A | AB; 
+6. A -> Pk S1 S2 ... Sk
+7. Si -> x | a | Fk S1 S2 ... Sk
+8. G -> A | AG

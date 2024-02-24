@@ -1,0 +1,3 @@
+Fact (parent(Atom bob, Atom alice))
+Fact (parent(Atom alice, Atom charlie))
+Parsed successfully.

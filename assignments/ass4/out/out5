@@ -1,0 +1,5 @@
+Fact (parent(Atom bob, Atom alice))
+Fact (parent(Atom alice, Atom charlie))
+Rule (ancestor(Variable X, Variable Y), [parent(Variable X, Variable Y)])
+Rule (ancestor(Variable X, Variable Y), [parent(Variable X, Variable Z); ancestor(Variable Z, Variable Y)])
+Parsed successfully.
