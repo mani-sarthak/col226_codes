@@ -9,7 +9,8 @@ ass:
 	ocamlc -c main.ml  
 	ocamlc -o my_parser types.cmo parser.cmo lexer.cmo main.cmo
 	./my_parser < input.txt > output.txt
+	./my_parser -print-tokens tokens.txt < input.txt
 
 
 clean:
-	rm *.cmi *.cmo output.txt lexer.ml my_parser parser.ml parser.mli
+	rm *.cmi *.cmo output.txt lexer.ml my_parser parser.ml parser.mli tokens.txt
