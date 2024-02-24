@@ -1,7 +1,6 @@
 {
   open Parser
   exception Error of string
-
   let raise_error msg = raise (Error msg)
 }
 

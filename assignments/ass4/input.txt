@@ -1,0 +1,2 @@
+parent(bob, alice).
+ancestor(X, Y) :- parent(X, Y).
