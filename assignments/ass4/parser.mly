@@ -2,9 +2,10 @@
 open Types
 %}
 
-%token <string> ATOM VARIABLE
+%token <string> VARIABLE ATOM
+%token <int> NUM
 %token <char> UNDEFINED
-%token DOT LPAREN RPAREN COMMA IMPLIES EOF
+%token DOT SEMICOLON  LBRACKET RBRACKET LPAREN RPAREN COMMA PLUS MINUS TIMES DIV EQUAL GT LT OFC ENDL IMPLIES EOF
 %start program
 %type <Types.program> program
 

@@ -26,3 +26,10 @@ parser (executible ass) will give the output the AST
 6. A -> Pk T1 T2 ... Tk (An atomic formula is a k-ary predicate symbol followed by k terms)
 7. Ti -> x | a | Fk T1 T2 ... Tk   (A term is either a variable, a constant, or a k-ary function symbol with k subterms)
 8. G -> A | AG  (A goal is a sequence of atomic formulas)
+
+
+
+## needed
+1. define grammar as well as lexical tokens 
+2. define the abstract syntax as OCaml datatype
+3. Return Anstract syntax tree
