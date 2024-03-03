@@ -1,5 +1,6 @@
 {
   open Parser
+  exception Error of string
 }
 
 let alpha_num = ['A'-'Z' 'a'-'z' '0'-'9' '_']
@@ -25,10 +26,11 @@ rule read = parse
   | '*' { TIMES }
   | '/' { DIV }
   | '=' { EQUAL }
+  | "\\=" { NEQ }
   | '>' { GT }
   | '<' { LT }
+  | '|' { PIPE }
   | '!' { OFC }
-  | '.' { ENDL }
   | ":-" { IMPLIES }
   | '%'  { single_line_comment lexbuf }
   | "/*" { multi_line_comment 0 lexbuf }

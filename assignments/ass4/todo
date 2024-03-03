@@ -33,3 +33,13 @@ parser (executible ass) will give the output the AST
 1. define grammar as well as lexical tokens 
 2. define the abstract syntax as OCaml datatype
 3. Return Anstract syntax tree
+
+
+
+## final
+1. incorporate semicolon
+2. underscore in list 
+3. () to be allowed as well on rhs and lhs 
+3. >= \+ etc things 
+4. where error is coming, try to fix line and columns !
+6. correct the output order !!

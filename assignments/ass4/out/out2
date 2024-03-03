@@ -1,2 +1,6 @@
-Rule (ancestor(Variable X, Variable Y), [parent(Variable X, Variable Y)])
+R (H (A (del, [V X; Node (_empty_list, []); Node (_empty_list, [])])), B [A (_ofc, [])])
+R (H (A (del, [V X; Node (_list, [V X; V R]); V Z])), B [A (del, [V X; V R; V Z]); A (_ofc, [])])
+R (H (A (del, [V X; Node (_list, [V Y; V R]); Node (_list, [V Y; V Z])])), B [A (del, [V X; V R; V Z]); A (_ofc, [])])
+F (H (A (same_set, [Node (_empty_list, []); Node (_empty_list, [])])))
+R (H (A (same_set, [Node (_list, [V H; V T]); V List])), B [A (mem, [V H; V List]); A (del, [V H; V List; V Rest]); A (same_set, [V T; V Rest])])
 Parsed successfully.
