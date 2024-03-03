@@ -8,7 +8,7 @@ ass: main.ml parser.mly types.mli types.ml lexer.mll
 	ocamlc -c lexer.ml 
 	ocamlc -c main.ml  
 	ocamlc -o my_parser types.cmo parser.cmo lexer.cmo main.cmo
-#	./my_parser < input.pl > output.txt
+	./my_parser < input.pl > output.txt
 
 clean:
 	rm *.cmi *.cmo output.txt lexer.ml my_parser parser.ml parser.mli tokens.txt
