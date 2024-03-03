@@ -3,9 +3,9 @@
   exception Error of string
 }
 
-let alpha_num = ['A'-'Z' 'a'-'z' '0'-'9' '_']
-let variable = ['A'-'Z'](alpha_num*)
-let constant = ['a'-'z'](alpha_num*) | ("\"" [^ '\"']+ "\"")
+let alpha_numeric = ['A'-'Z' 'a'-'z' '0'-'9' '_']
+let variable = ['A'-'Z'](alpha_numeric*)
+let constant = ['a'-'z'](alpha_numeric*) | ("\"" [^ '\"']+ "\"")
 let separator = [' ' '\t' '\n' '\r']+
 let number = '0'|['1'-'9']['0'-'9']*
 
@@ -32,6 +32,10 @@ rule read = parse
   | '|' { PIPE }
   | '!' { OFC }
   | ":-" { IMPLIES }
+  | '_'  {UNDERSCORE}
+  | ">=" {GEQ}
+  | "<=" {LEQ}
+  | "\\+" {NOT}
   | '%'  { single_line_comment lexbuf }
   | "/*" { multi_line_comment 0 lexbuf }
   | _ as x { UNDEFINED(x) }

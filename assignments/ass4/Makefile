@@ -1,4 +1,4 @@
-ass: main.ml parser.mly types.mli types.ml lexer.mll
+ass: main.ml parser.mly types.mli types.ml lexer.mll input.pl
 	ocamlc -c types.mli
 	ocamlc -c types.ml 
 	ocamlyacc parser.mly
@@ -7,8 +7,18 @@ ass: main.ml parser.mly types.mli types.ml lexer.mll
 	ocamllex lexer.mll
 	ocamlc -c lexer.ml 
 	ocamlc -c main.ml  
-	ocamlc -o my_parser types.cmo parser.cmo lexer.cmo main.cmo
-	./my_parser < input.pl > output.txt
+	ocamlc -o ass types.cmo parser.cmo lexer.cmo main.cmo
+	./ass < input.pl > output.txt	
+#	make test
+
+
+test: ass input.pl
+	@mkdir out
+	for file in ./test/*.pl; do \
+        ./ass < $$file > ./out/$$(basename $$file .pl); \
+    done
+
 
 clean:
-	rm *.cmi *.cmo output.txt lexer.ml my_parser parser.ml parser.mli tokens.txt
+	-rm *.cmi *.cmo output.txt lexer.ml ass parser.ml parser.mli tokens.txt 
+	-rm -rf out

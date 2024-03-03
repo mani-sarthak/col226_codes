@@ -34,11 +34,16 @@ let print_tokens lexbuf =
         | TIMES -> sprintf "TIMES"
         | DIV -> sprintf "DIVIDE"
         | EQUAL -> sprintf "EQUAL"
+        | NEQ -> sprintf "NOT_EQUAL"
         | GT -> sprintf "GT"
         | LT -> sprintf "LT"
+        | PIPE -> sprintf "PIPE"
         | OFC -> sprintf "OFC"
-        (* | DOT -> sprintf "DOT" *)
         | IMPLIES -> sprintf "IMPLIES" 
+        | UNDERSCORE -> sprintf "UNDERSCORE"
+        | GEQ -> sprintf "GEQ"
+        | LEQ -> sprintf "LEQ"
+        | NOT -> sprintf "NEGATION"
         | UNDEFINED x -> sprintf "Undefined %c" x
         | _ -> "OtherToken"
         in

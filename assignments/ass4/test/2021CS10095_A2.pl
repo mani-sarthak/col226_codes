@@ -12,7 +12,6 @@ mem(A, [_|T]) :- mem(A, T).
 bool(true).
 bool(false).
 zero(0).
-zero(X):-  X is 0.
 intT(X) :-  integer(X).
 uintT(X) :- intT(X), X >= 0.
 hastype(G, intT(X), intT).
@@ -21,7 +20,7 @@ hastype(G, uintT(X), uintT).
 hastype(G, X, boolT) :- bool(X).
 hastype(G, X, intT) :- integer(X).
 hastype(G, X, uintT) :- uintT(X).
-hastype(G, varT(X), T) :-  (hastype(G, X, T) , mem((X, T), G)).
+hastype(G, varT(X), T) :-  hastype(G, X, T) , mem((X, T), G).
 hastype(G, X, T) :- mem((X, T), G).
 
 

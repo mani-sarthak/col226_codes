@@ -1,5 +1,0 @@
-F (H (A (parent, [Node (bob, []); Node (alice, [])])))
-F (H (A (parent, [Node (alice, []); Node (charlie, [])])))
-R (H (A (ancestor, [V X; V Y])), B [A (parent, [V X; V Y])])
-R (H (A (ancestor, [V X; V Y])), B [A (parent, [V X; V Z]); A (ancestor, [V Z; V Y])])
-Parsed successfully.

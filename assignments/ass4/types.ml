@@ -1,7 +1,7 @@
 type variable = string
 type symbol = string
-type term = V of variable | Num of int | Node of symbol * (term list)
-type atom = A of symbol * (term list)
+type term = V of variable | Num of int | Wildcard | Node of symbol * (term list) | Tuple of term list 
+type atom = A of symbol * (term list) | Not of atom
 type head = H of atom
 type body = B of atom list
 type clause = F of head | R of head * body
@@ -12,9 +12,13 @@ let rec string_of_term = function
   | V v -> "VARIABLE " ^ v
   | Num n -> "NUMERAL " ^ string_of_int n
   | Node (s, ts) -> "NODE (" ^ s ^ ", [" ^ String.concat "; " (List.map string_of_term ts) ^ "])"
+  | Wildcard -> "WILDCARD"
+  | Tuple ts -> "TUPLE [" ^ String.concat "; " (List.map string_of_term ts) ^ "]"
 
-let rec string_of_atom (A (s, ts)) =
-  "ATOM (" ^ s ^ ", [" ^ String.concat "; " (List.map string_of_term ts) ^ "])"
+let rec string_of_atom = function
+  | A (s, ts) -> "ATOM (" ^ s ^ ", [" ^ String.concat "; " (List.map string_of_term ts) ^ "])"
+  | Not a -> "NOT (" ^ string_of_atom a ^ ")"
+
 
 let rec string_of_head = function
   | H a -> "HEAD (" ^ string_of_atom a ^ ")"

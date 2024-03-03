@@ -1,50 +1,125 @@
+/** Constants both numerical and boolean */
+hastype(Gamma, true, bool).
+hastype(Gamma, false, bool).
+hastype(Gamma, N, int) :- integer(N).
 
-/* Intersection with empty set results in an empty set. */
-interHelper(S, [], []) :- !.
-interHelper([], S, []) :- !.
 
-/* If there is a common member between the sets S1 and S2 then add that to the result S3 */
-interHelper(S1, [X|S2], [X|S3]) :- mem(X, S1), interHelper(S1, S2, S3).
+/** lookup rules for bro-relation */
+bro([], X) :- fail.
+bro([X|_], X) :- !.
+bro([_|Z], X) :- bro(Z, X).
 
-/* If the top element X of second set is not in the first set then it is not a common member among the sets and hence we dont consider it in our final answer */
-interHelper(S1, [X|S2], S3) :- mem(X, S1), interHelper(S1, S2, S3).
+hastype(Gamma, v(X), T) :- bro(Gamma, (v(X), T)).
 
-interI(S1, S2, S3) :- interHelper(S1, S2, Intersection), same_set(Intersection, S3).
+append([], L, L).
+append([X | Xs], L, [X | L1]) :- append(Xs, L, L1).
 
-/*
-B.4 diffHelper(S1, S2, S3) -- computes the set differnce of S2 from S1 and puts the result in S3 
+/** arithmetic operations over numerical expressions */
+hastype(Gamma, arith(E1, E2), int) :- hastype(Gamma, E1, int), hastype(Gamma, E2, int).
+
+hastype(Gamma, addop(E1, E2), T) :- hastype(Gamma, arith(E1, E2), T).
+hastype(Gamma, subop(E1, E2), T) :- hastype(Gamma, arith(E1, E2), T).
+hastype(Gamma, mulop(E1, E2), T) :- hastype(Gamma, arith(E1, E2), T).
+hastype(Gamma, divop(E1, E2), T) :- hastype(Gamma, arith(E1, E2), T).
+hastype(Gamma, expop(E1, E2), T) :- hastype(Gamma, arith(E1, E2), T).
+hastype(Gamma, modop(E1, E2), T) :- hastype(Gamma, arith(E1, E2), T).
+hastype(Gamma, absolute(E1), int) :- hastype(Gamma, E1, int).
+
+
+/** boolean operations over boolean expressions */
+hastype(Gamma, boolop(E1, E2), bool) :- hastype(Gamma, E1, bool), hastype(Gamma, E2, bool).
+
+hastype(Gamma, andop(E1, E2), T) :- hastype(Gamma, boolop(E1, E2), T).
+hastype(Gamma, orop(E1, E2), T) :-hastype(Gamma, boolop(E1, E2), T).
+hastype(Gamma, impop(E1, E2), T) :-hastype(Gamma, boolop(E1, E2), T).
+hastype(Gamma, notop(E1), bool) :- hastype(Gamma, E1, bool).
+
+
+/** comparison operations over numerical expressions */
+hastype(Gamma, equal(E1, E2), bool) :- hastype(Gamma, E1, int), hastype(Gamma, E2, int).
+hastype(Gamma, greatorequal(E1, E2), bool) :- hastype(Gamma, E1, int), hastype(Gamma, E2, int).
+hastype(Gamma, lessorequal(E1, E2), bool) :- hastype(Gamma, E1, int), hastype(Gamma, E2, int).
+hastype(Gamma, greater(E1, E2), bool) :- hastype(Gamma, E1, int), hastype(Gamma, E2, int).
+hastype(Gamma, lesser(E1, E2), bool) :- hastype(Gamma, E1, int), hastype(Gamma, E2, int).
+
+/** equality over arbitrary expressions, where equality can be decided */
+hastype(Gamma, equality(E1, E2), bool) :- hastype(Gamma, E1, T), hastype(Gamma, E2, T).
+
+/** conditional expressions if_then_else */
+hastype(Gamma, if_then_else(E0, E1, E2), T) :- hastype(Gamma, E0, bool), hastype(Gamma, E1, T), hastype(Gamma, E2, T).
+
+/** function abstractions \X.E  with functions as first-class citizens */
+hastype(Gamma, abstract(v(X), E), arrowT(T1, T2)) :- hastype([(v(X),T1)| Gamma], E, T2).
+
+/** function application (E1 E2)   */
+hastype(Gamma, applied(E1, E2), T) :- hastype(Gamma, E1, arrowT(T1, T)), hastype(Gamma, E2, T1).
+
+
+/** n-tuples  (n >= 0) */
+hastype(Gamma, tuple_n([]), prod_n([])).
+hastype(Gamma, tuple_n([E1|E]), prod_n([T1|T])) :- hastype(Gamma, E1, T1), hastype(Gamma, tuple_n(E), prod_n(T)).
+
+/** expressions using projection operations. */
+checknew([Y|_], 0, A) :- !.
+
+hastype(Gamma, proj_n(tuple_n([Ek | E]), 0), T) :- hastype(Gamma, Ek, T), !.
+hastype(Gamma, proj_n(tuple_n(X), K), T) :- checknew(X, K, A), hastype(Gamma, E, T).
+
+/** D definitions */
+
+/** simple definitions X =def= E
+sequential definitions D1; D2
+parallel definitions D1 || D2
+local definitions local D1 in D2 end */
+
+check((v(X), W), (v(X), Z)) :- !, false.
+check((v(X), W), (v(Y), Z)) :- !, true.
+
+typeElaborates(Gamma, (v(X), E), [(v(X), T)]) :- hastype(Gamma, E, T).
+typeElaborates(Gamma, sequential(D1, D2), Gamma3) :- append(Gamma1, Gamma2, Gamma3), typeElaborates(Gamma, D1, Gamma1), append(Gamma, Gamma1, Gamma4), typeElaborates(Gamma4, D2, Gamma2).
+typeElaborates(Gamma, parallel(D1, D2), Gamma3) :- check(D1, D2) ,append(Gamma1, Gamma2, Gamma3), typeElaborates(Gamma, D1, Gamma1), typeElaborates(Gamma, D2, Gamma2).
+typeElaborates(Gamma, local(D1, D2), Gamma_new) :- typeElaborates(Gamma, D1, Gamma1), append(Gamma, Gamma1, Gamma2),typeElaborates(Gamma2, D2, Gamma_new).
+
+
+/** qualified expressions of the form let D in E end */
+hastype(Gamma, letDinE(D, E), T) :- typeElaborates(Gamma, D, Gamma1), append(Gamma, Gamma1, Gamma2), hastype(Gamma2, E, T).
+
+
+
+/**
+
+test examples - 
+
+hastype([(v(x),int), (v(y), char), (v(z), bool), (v(w), int)], addop(4, v(x)), int).
+hastype([(v(x),int), (v(y), char), (v(z), bool), (v(w), int)], divop(10, v(x)), int).
+hastype([(v(x),int), (v(y), char), (v(z), bool), (v(w), int)], absolute(v(z)), bool).
+hastype([(v(x),int), (v(y), char), (v(z), bool), (v(w), int)], orop(true, v(z)), bool).
+hastype([(v(x),int), (v(y), char), (v(z), bool), (v(w), int)], equality(v(z), true), bool).
+hastype([(v(x),int), (v(y), char), (v(z), bool), (v(w), int)], lessorequal(2, v(x)), bool).
+hastype([(v(x),int), (v(y), char), (v(z), bool), (v(w), int)], if_then_else(v(z), v(x), 5), int).
+hastype([(v(x),int), (v(y), char), (v(z), bool), (v(w), int)], abstract(v(x), v(w)), arrowT(int, int)).
+hastype([(v(x),int), (v(y), char), (v(z), bool), (v(w), int)], applied(abstract(v(x), v(z)), 4), int).
+hastype([(v(x),int), (v(y), char), (v(z), bool), (v(w), int)], applied(abstract(v(x), v(w)), 4), int).
+hastype([(v(x),int), (v(y), float), (v(z), bool), (v(w), int)], tuple_n([v(x), v(y)]), prod_n([int, float])).
+hastype([(v(x),int), (v(y), float), (v(z), bool), (v(w), int)], proj_n(tuple_n([v(x), v(y)]), 0), int).
+hastype([(v(x),int), (v(y), char), (v(z), bool), (v(w), int)], letDinE((v(x), 3), v(w)), int).
+
 */
 
 
-/* Set difference for empty set is the set itself (base case).
-Since the sets contain distinct elements we iterate for every element in the second set then
-delete it from the first set (if exists) using del(X, L1, L2) */
 
 
+/**
 
-diffHelper(L, [], L) :- !.
-diffHelper(L1, [X|S], L2) :- diffHelper(L1, S, L3),  del(X, L3, L2). 
-diffI(S1, S2, S3) :- diffHelper(S1, S2, SetDiff), same_set(SetDiff, S3).
+Counter-examples that it can not work as polymorphic type inference.
 
+1. hastype([(v(x),int), (v(y), float), (v(z), bool), (v(w), int)], tuple_n([v(p, v(q)]), prod_n([T1, T2])).
 
+- In this example, it suggests only one type, because we used '!' operator. Since, we need cut operator to make it work like
+type inference, it can't work as polymorphic type inference altogether.
 
-/*
-B.5 cartesianGenerate(S1, S2, S3) -- returns the cartesian product of sets S1 and S2 in S3
+2. hastype([(v(x),int), (v(y), float), (v(z), bool), (v(w), int)], tuple_n([v(p), v(q), v(r)]), prod_n([T1, T2, T3])).
+
+- Similar explanation.
+
 */
-
-cartesianGenerateHelper(X, [ ], [ ]) :- !.
-cartesianGenerateHelper(X, [Y|R], [ [X, Y] | Z ]) :- cartesianGenerateHelper(X, R, Z).
-
-
-/*      S x 0 = 0 = 0 x S, where 0 is empty set {}      */
-cartesianGenerate(S, [], []) :- !.
-cartesianGenerate([], S, []) :- !.
-
-/*   Using the first element in the first list  with the second 
-list get the members of the cartesian product in S4 using cartesianHelper(X, S2, S4). 
-
-Recursively compute the rest members of the cartesian product apart 
-from the elements from the first list for which already computed and then append the result in S3. */
-
-cartesianGenerate([X|S1], S2, S3) :- cartesianGenerateHelper(X, S2, S4), cartesianGenerate(S1, S2, S5), append(S4, S5, S3).
-cartesianI(S1, S2, S3) :- cartesianGenerate(S1, S2, Cartesian), same_set(Cartesian, S3).
