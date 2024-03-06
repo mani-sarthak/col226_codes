@@ -267,5 +267,18 @@ assert(test9 = [("x", g_y)]);;
 
 
 
-(* //////////////////////////////////////// *)
 (* mgu t u = mgu (mirror u) (mirror t);; *)
+(* 
+Proof Sketch :- 
+
+      given t and u say sigma is the mgu of t and u, then sigma(t) = sigma(u)
+      appling mirror we have mirror(sigma(t)) = mirror(sigma(u)).
+      we have mirror(sigma(t)) = sigma(mirror(t)). (fairly easy to show)
+      using it we have sigma(mirror(t)) = sigma(mirror(u)).
+      hence sigma is a unifier of mirror(t) and mirror(u).
+      Since sigma is a unifier of mirror(t) and mirror(u), and by the definition of mgu, 
+      there cant be a more general substitution than sigma that unifies mirror(t) and mirror(u), 
+      otherwise would contradict the fact that sigma is mgu of t and u.
+      So we say sigma is a mgu of mirror(t) and mirror(u).
+
+ *)
