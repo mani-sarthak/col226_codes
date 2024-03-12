@@ -11,6 +11,8 @@ type tree =
 ;; 
 
 
+
+(* ///////////////////////////////////////// *)
 let rec check_sig_arity s = match s with
   | [] -> true
   | (a, b)::t -> if b < 0 
@@ -36,12 +38,18 @@ let check_sig sig1 =
 
 
 let valid_sig = [("0", 0); ("1", 0); ("+", 2); ("*", 2)];;
-let invalid_sig = [("0", 0); ("0", 1); ("+", 2); ("*", -1)];;
+let invalid_sig1 = [("0", 0); ("0", 1); ("+", 2); ("*", 2)];; (* same symbol repeted*)
+let invalid_sig2 = [("0", 0); ("0", 0); ("+", 2); ("*", 2)];; (* same symbol and arity duplicated*)
+let invalid_sig3 = [("0", 0); ("1", 1); ("+", 2); ("*", -1)];; (* negative arity *)
 
 assert (check_sig valid_sig = true);;
-assert (check_sig invalid_sig = false);;
+assert (check_sig invalid_sig1 = false);;
+assert (check_sig invalid_sig2 = false);;
+assert (check_sig invalid_sig3 = false);;
 
 
+
+(* /////////////////////////////////////////////////////// *)
 let arity_of_symbol sig1 s =
   List.fold_left (fun acc (sym, ar) -> if sym = s then Some ar else acc) None sig1;;
 
@@ -65,16 +73,18 @@ let valid_tree = C {node = ("+", 2); children = [
                            C {node = ("0", 0); children = []};
                            C {node = ("1", 0); children = []}
                          ]}
-                      ]};;
+                      ]}
+;;
 let invalid_tree = C {node = ("+", 2); children = [
                         C {node = ("1", 0); children = []}
-                      ]};;
+                      ]}
+;;
 
 assert(wftree sig1 valid_tree = true);;
 assert(wftree sig1 invalid_tree = false);;
 
 
-
+(* //////////////////////////////////////////// *)
 let rec ht t = match t with
   V _ -> 0 
   | C r -> 
@@ -115,7 +125,7 @@ let vars_tree = C {node = ("+", 2); children = [
 
 let dup_vars_tree = C {node = ("+", 2); children = [
                         V "x";
-                        C {node = ("*", 2); children = [
+                        C {node = ("*", 3); children = [
                            V "x"; 
                            V "y";
                            C {node = ("1", 0); children = []}
@@ -124,7 +134,10 @@ let dup_vars_tree = C {node = ("+", 2); children = [
 ;;
 
 
-
+assert(ht vars_tree = 2);;
+assert(ht dup_vars_tree = 2);;
+assert(size vars_tree = 5);;
+assert(size dup_vars_tree = 6);;
 assert(vars vars_tree = ["x"]);;
 assert(vars dup_vars_tree = ["x"; "y"]);;
 
@@ -139,7 +152,7 @@ let rec print_tree t = match t with
       Printf.printf "]";
 ;;
 
-
+(* ////////////////////////////////////////////////// *)
 let rec mirror t = match t with
   | V _ -> t
   | C r -> C {r with children = List.rev_map mirror r.children};;
@@ -161,14 +174,18 @@ assert(mirror original_tree = C {node = ("+", 2); children = [
                            V "y";
                          ]};
                         V "x"
-                      ]}
-);;
+                      ]})
+;;
 
 
 
+(* ////////////////////////////////////////////////////// *)
 
 type substitution = (string * tree) list;;
 type subst_composition = substitution list;;
+
+
+(* ////////////////////////////////////////////////////// *)
 
 let one = C {node = ("1", 0); children = []};; 
 let x = V "x";; 
@@ -181,25 +198,42 @@ let plus_timesonex_pluszeroy =
   children = [times_one_x; plus_zero_y ] };;
 
 
-
-
-(* it can be changes with the subst given in notes *)
 let rec subst sigma t = match t with
   | V v -> (try List.assoc v sigma with Not_found -> t)
   | C r -> C {r with children = List.map (subst sigma) r.children};;
 
 
-let apply_composed_substs (compositions: subst_composition) (t: tree) : tree =
+let apply_composed_substs compositions t =
   List.fold_left (fun acc_tree sigma -> subst sigma acc_tree) t compositions;;
 
-let sigma1 = [("x", C {node = ("1", 0); children = []})];;
+let sigma1 = [("x", C {node = ("1", 0); children = []})];; 
 let sigma2 = [("y", C {node = ("+", 2); children = [V "x"; V "y"]})];;
 
-let composed_substs = [ sigma2; sigma1; sigma2; sigma1];;
 let example_tree = V "y";;
+
+
+let result_tree = apply_composed_substs [sigma1] example_tree;;
+assert (result_tree = example_tree);;
+
+
+let result_tree = apply_composed_substs [sigma2] example_tree;;
+assert (result_tree = C {node = ("+", 2); children = [V "x"; V "y"]});;
+
+let composed_substs = [ sigma2; sigma1];;
 let result_tree = apply_composed_substs composed_substs example_tree;;
+assert (result_tree = C {node = ("+", 2); children = [C {node = ("1", 0); children = []}; V "y"]})
+;;
 
 
+let composed_substs = [ sigma2; sigma1; sigma2; sigma1];;
+let result_tree = apply_composed_substs composed_substs example_tree;;
+assert (result_tree = C {node = ("+", 2); children = [C {node = ("1", 0); children = []};
+   C {node = ("+", 2); children = [C {node = ("1", 0); children = []}; V "y"]}]})
+;;
+
+
+
+(* ///////////////////////////////////////////////////////// *)
 
 let rec occurs v t = match t with
   | V var -> var = v
@@ -208,20 +242,20 @@ let rec occurs v t = match t with
 
 
 let rec mgu t1 t2 = 
-  if t1 = t2 then [] 
+  if t1 = t2 then []   (* case 5 *)
   else match (t1, t2) with
-  | (V v1, V v2) when v1 = v2 -> []
-  | (V v, t) | (t, V v) ->
+  | (V v1, V v2) when v1 = v2 -> [] (* case 1 *)
+  | ((V v, t) | (t, V v)) -> (* case 2, 3 and 4 with "occours check" *)
       if occurs v t then raise NOT_UNIFIABLE
       else [(v, t)]
   | (C {node = n1; children = c1}, C {node = n2; children = c2}) when n1 = n2 ->
-      (try
+      (try   (*case 9 *)
          List.fold_left2 (fun acc_subst child1 child2 ->
            let child_mgu = mgu (subst acc_subst child1) (subst acc_subst child2) in
            acc_subst @ child_mgu
          ) [] c1 c2
-       with Invalid_argument _ -> raise NOT_UNIFIABLE)
-  | _ -> raise NOT_UNIFIABLE;;
+       with Invalid_argument _ -> raise NOT_UNIFIABLE) (* case 7 *)
+  | _ -> raise NOT_UNIFIABLE;; (* case 6 and 8 *)
   
 
 (* 
@@ -246,6 +280,7 @@ let f_x = C {node = ("F", 1); children = [x]};;
 let g_y = C {node = ("G", 1); children = [y]};; 
 let f_g_y = C {node = ("F", 1); children = [g_y]};; 
   
+(* ////////////////////////////////////////////////////// *)
 
 let test1 = mgu x x;;
 assert (test1 = []);;
@@ -263,12 +298,24 @@ let test9 = mgu f_x f_g_y;;
 assert(test9 = [("x", g_y)]);;
 
 
+(* ///////////////////////////////////////////////////////////// *)
 
 
 
-
-(* mgu t u = mgu (mirror u) (mirror t);; *)
+(* mirror (mgu t u) = mgu (mirror u) (mirror t);; *) 
 (* 
+NOTE :- this is the correct statement since we have a case on which the statemnt 
+  "mgu (t, u) = mgu (mirror u, mirror t)." fails.
+  Consider :- t = V x 
+              u = C {node = ("+", 2); children = [V "a";  V "b"]}
+
+  mgu (t, u) = [("x", C {node = ("+", 2); children = [V "a";  V "b"]})]
+  mirror t = V x
+  mirror u = C {node = ("+", 2); children = [V "b";  V "a"]}
+  mgu (mirror u, mirror t) = [("x", C {node = ("+", 2); children = [V "b";  V "a"]})]
+  Hence mgu (t, u) != mgu (mirror u, mirror t) .
+
+
 Proof Sketch :- 
 
       given t and u say sigma is the mgu of t and u, then sigma(t) = sigma(u)
@@ -279,6 +326,6 @@ Proof Sketch :-
       Since sigma is a unifier of mirror(t) and mirror(u), and by the definition of mgu, 
       there cant be a more general substitution than sigma that unifies mirror(t) and mirror(u), 
       otherwise would contradict the fact that sigma is mgu of t and u.
-      So we say sigma is a mgu of mirror(t) and mirror(u).
+      Hence we say mirror(sigma) is a mgu of mirror(t) and mirror(u).
 
  *)
