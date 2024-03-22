@@ -9,6 +9,11 @@ type exp = Var of string
 | Div of exp * exp
 | Mod of exp * exp
 | Pow of exp * exp
+| Bool of bool
+| Not of exp
+| And of exp * exp
+| Or of exp * exp
+| Implies of exp * exp
 ;; 
 
 type opcode = LOOKUP of string
@@ -23,10 +28,15 @@ type opcode = LOOKUP of string
 | DIV
 | MOD
 | POW
+| BOOL of bool
+| NOT
+| AND
+| OR
+| IMPLIES
 ;;
 
 type table = (string * answer) list
-and answer = Vclos of table * string * control | Int of int
+and answer = Vclos of table * string * control | Int of int | Bool of bool
 and stack = answer list
 and environment = table
 and control = opcode list
@@ -55,6 +65,11 @@ let rec compile e = match e with
 | Div(e1, e2) -> (compile e1) @ (compile e2) @ [DIV]
 | Mod(e1, e2) -> (compile e1) @ (compile e2) @ [MOD]
 | Pow(e1, e2) -> (compile e1) @ (compile e2) @ [POW]
+| Bool(b) -> [BOOL(b)]
+| Not(e1) -> (compile e1) @ [NOT]
+| And(e1, e2) -> (compile e1) @ (compile e2) @ [AND]
+| Or(e1, e2) -> (compile e1) @ (compile e2) @ [OR]
+| Implies(e1, e2) -> (compile e1) @ (compile e2) @ [IMPLIES]
 ;;
 
 
@@ -71,6 +86,11 @@ let rec secd = function
 | (Int(n2)::Int(n1)::s, e, DIV::c, d) -> secd(Int(n1 / n2)::s, e, c, d)
 | (Int(n2)::Int(n1)::s, e, MOD::c, d) -> secd(Int(n1 mod n2)::s, e, c, d)
 | (Int(n2)::Int(n1)::s, e, POW::c, d) -> secd(Int(int_of_float ((float_of_int n1) ** (float_of_int n2)))::s, e, c, d)
+| (s, e, BOOL(b)::c, d) -> secd(Bool(b)::s, e, c, d)
+| (Bool(b)::s, e, NOT::c, d) -> secd(Bool(not b)::s, e, c, d)
+| (Bool(b2)::Bool(b1)::s, e, AND::c, d) -> secd(Bool(b1 && b2)::s, e, c, d)
+| (Bool(b2)::Bool(b1)::s, e, OR::c, d) -> secd(Bool(b1 || b2)::s, e, c, d)
+| (Bool(b2)::Bool(b1)::s, e, IMPLIES::c, d) -> secd(Bool((not b1) || b2)::s, e, c, d)
 | _ -> raise InvalidOperation
 ;;
 
@@ -81,8 +101,10 @@ let e1 = Abs("x", Var("x"));;
 let e2 = Abs("x", Abs("y", App(Var("x"), Var("y"))));;
 let e3 = Abs("x", Abs("y", App(Var("y"), Int(3))));;
 let e4 = App(Abs("x", Add(Var "x", Int 7)), Int 3);; 
+let e5 = And(Bool(true), Bool(false));;
 
 let c1 = compile e1;;
 let c2 = compile e2;;
 let c3 = compile e3;;
 let c4 = compile e4;;
+let c5 = compile e5;;
