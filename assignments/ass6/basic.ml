@@ -20,6 +20,7 @@ type exp = Var of string
 | Gt of exp * exp
 | Le of exp * exp
 | Ge of exp * exp
+| IfTE of exp * exp * exp
 ;; 
 
 type opcode = LOOKUP of string
@@ -45,6 +46,7 @@ type opcode = LOOKUP of string
 | GT
 | LE
 | GE
+| COND of (opcode list) * (opcode list)
 ;;
 
 type table = (string * answer) list
@@ -88,12 +90,14 @@ let rec compile e = match e with
 | Gt(e1, e2) -> (compile e1) @ (compile e2) @ [GT]
 | Le(e1, e2) -> (compile e1) @ (compile e2) @ [LE]
 | Ge(e1, e2) -> (compile e1) @ (compile e2) @ [GE]
+| IfTE(e1, e2, e3) -> (compile e1) @ [COND((compile e2), (compile e3))]
 ;;
 
 
 
 
 let rec secd = function
+| (x::s, e, [], _) -> x
 | (s, e, LOOKUP(x)::c, d) -> secd((lookup x e)::s, e, c, d)
 | (s, e, CLOS(x, c1)::c, d) -> secd((Vclos(e, x, c1))::s, e, c, d)
 | (x::Vclos(e1, x1, c1)::s, e, APP::c, d) -> secd([], (x1, x)::e1, c1, (s, e, c)::d)
@@ -119,6 +123,7 @@ let rec secd = function
 | (Int(n2)::Int(n1)::s, e, GT::c, d) -> secd(Bool(n1 > n2)::s, e, c, d)
 | (Int(n2)::Int(n1)::s, e, LE::c, d) -> secd(Bool(n1 <= n2)::s, e, c, d)
 | (Int(n2)::Int(n1)::s, e, GE::c, d) -> secd(Bool(n1 >= n2)::s, e, c, d)
+| (Bool(b)::s, e, COND(c1, c2)::c, d) -> if b then secd(s, e, c1 @ c, d) else secd(s, e, c2 @ c, d)
 | _ -> raise InvalidOperation
 ;;
 
@@ -134,7 +139,7 @@ let e3 = Abs("x", Abs("y", App(Var("y"), Int(3))));;
 let e4 = App(Abs("x", Add(Var "x", Int 7)), Int 3);; 
 let e5 = And(Bool(true), Bool(false));;
 let e6 = Le(Int(3), Int(4));;
-
+let e7 = IfTE(Le(Int(3), Int(4)), Int(3), Int(4));;
 
 
 let c1 = compile e1;;
@@ -143,5 +148,14 @@ let c3 = compile e3;;
 let c4 = compile e4;;
 let c5 = compile e5;;
 let c6 = compile e6;;
+let c7 = compile e7;;
 
+
+exec c1;;
+exec c2;;
+exec c3;;
+exec c4;;
+exec c5;;
+exec c6;;
+exec c7;;
 
