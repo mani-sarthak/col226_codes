@@ -14,6 +14,12 @@ type exp = Var of string
 | And of exp * exp
 | Or of exp * exp
 | Implies of exp * exp
+| Eq of exp * exp
+| Neq of exp * exp
+| Lt of exp * exp
+| Gt of exp * exp
+| Le of exp * exp
+| Ge of exp * exp
 ;; 
 
 type opcode = LOOKUP of string
@@ -33,6 +39,12 @@ type opcode = LOOKUP of string
 | AND
 | OR
 | IMPLIES
+| EQ
+| NEQ
+| LT
+| GT
+| LE
+| GE
 ;;
 
 type table = (string * answer) list
@@ -70,7 +82,15 @@ let rec compile e = match e with
 | And(e1, e2) -> (compile e1) @ (compile e2) @ [AND]
 | Or(e1, e2) -> (compile e1) @ (compile e2) @ [OR]
 | Implies(e1, e2) -> (compile e1) @ (compile e2) @ [IMPLIES]
+| Eq(e1, e2) -> (compile e1) @ (compile e2) @ [EQ]
+| Neq(e1, e2) -> (compile e1) @ (compile e2) @ [NEQ]
+| Lt(e1, e2) -> (compile e1) @ (compile e2) @ [LT]
+| Gt(e1, e2) -> (compile e1) @ (compile e2) @ [GT]
+| Le(e1, e2) -> (compile e1) @ (compile e2) @ [LE]
+| Ge(e1, e2) -> (compile e1) @ (compile e2) @ [GE]
 ;;
+
+
 
 
 let rec secd = function
@@ -91,9 +111,20 @@ let rec secd = function
 | (Bool(b2)::Bool(b1)::s, e, AND::c, d) -> secd(Bool(b1 && b2)::s, e, c, d)
 | (Bool(b2)::Bool(b1)::s, e, OR::c, d) -> secd(Bool(b1 || b2)::s, e, c, d)
 | (Bool(b2)::Bool(b1)::s, e, IMPLIES::c, d) -> secd(Bool((not b1) || b2)::s, e, c, d)
+| (Int(n2)::Int(n1)::s, e, EQ::c, d) -> secd(Bool(n1 = n2)::s, e, c, d)
+| (Int(n2)::Int(n1)::s, e, NEQ::c, d) -> secd(Bool(n1 <> n2)::s, e, c, d)
+| (Bool(b2)::Bool(b1)::s, e, EQ::c, d) -> secd(Bool(b1 = b2)::s, e, c, d)
+| (Bool(b2)::Bool(b1)::s, e, NEQ::c, d) -> secd(Bool(b1 <> b2)::s, e, c, d)
+| (Int(n2)::Int(n1)::s, e, LT::c, d) -> secd(Bool(n1 < n2)::s, e, c, d)
+| (Int(n2)::Int(n1)::s, e, GT::c, d) -> secd(Bool(n1 > n2)::s, e, c, d)
+| (Int(n2)::Int(n1)::s, e, LE::c, d) -> secd(Bool(n1 <= n2)::s, e, c, d)
+| (Int(n2)::Int(n1)::s, e, GE::c, d) -> secd(Bool(n1 >= n2)::s, e, c, d)
 | _ -> raise InvalidOperation
 ;;
 
+
+let _env = [("x", Int(3)); ("y", Int(4)); ("z", Bool(true))];;
+let exec c = secd([], _env, c, []);;
 
 (* Examples *)
 
@@ -102,9 +133,15 @@ let e2 = Abs("x", Abs("y", App(Var("x"), Var("y"))));;
 let e3 = Abs("x", Abs("y", App(Var("y"), Int(3))));;
 let e4 = App(Abs("x", Add(Var "x", Int 7)), Int 3);; 
 let e5 = And(Bool(true), Bool(false));;
+let e6 = Le(Int(3), Int(4));;
+
+
 
 let c1 = compile e1;;
 let c2 = compile e2;;
 let c3 = compile e3;;
 let c4 = compile e4;;
 let c5 = compile e5;;
+let c6 = compile e6;;
+
+
