@@ -128,10 +128,10 @@ let rec secd = function
 ;;
 
 
-let _env = [("x", Int(3)); ("y", Int(4)); ("z", Bool(true))];;
+let _env = [];;
 let exec c = secd([], _env, c, []);;
 
-(* Examples *)
+(* Testcases *)
 
 let e1 = Abs("x", Var("x"));;
 let e2 = Abs("x", Abs("y", App(Var("x"), Var("y"))));;
@@ -152,6 +152,7 @@ let c7 = compile e7;;
 
 
 exec c1;;
+secd([], [("x", Int(3))], c1, []);;
 exec c2;;
 exec c3;;
 exec c4;;
@@ -159,3 +160,10 @@ exec c5;;
 exec c6;;
 exec c7;;
 
+let exp1 : exp = Var("y");;                           (* y *)
+let _env = [("y", Int(4))];;                          (* y = 4 *)
+let exp2 : exp = Abs("x", Add(Var "x", Int 7));;      (* \x. (x + 7) *)
+let exp3 : exp = Pow(exp1, Int(2));;                  (* y^2 = 16 *)
+let exp4 : exp = Gt(Int(3), Int(4));;                 (* 3 > 4 = false *)
+let expn : exp = IfTE(exp4, exp1, App(exp2, exp3));;  (* exp4 = false => APP( x + 7 where x is 16*)
+secd ([], _env, compile expn, []);;                   (* returns 23 as answer *)

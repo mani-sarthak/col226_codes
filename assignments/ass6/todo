@@ -1,8 +1,12 @@
 e ::= x | \x. e_1 | (e_1 e_2) // lambda calculus
 
 
-extend with numerals, booleans etc 
-design and implement secd machine which implements call by value semantics
+extend with numerals, booleans etc -> done 
+design and implement secd machine which implements call by value semantics -> done 
+
+need a lot of testcases
+if time permits implement tuples and projections
+
 
 
 notes:
