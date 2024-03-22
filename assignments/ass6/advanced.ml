@@ -21,6 +21,9 @@ type exp = Var of string
 | Le of exp * exp
 | Ge of exp * exp
 | IfTE of exp * exp * exp
+| Pair of exp * exp
+| Fst of exp
+| Snd of exp
 ;; 
 
 type opcode = LOOKUP of string
@@ -47,10 +50,13 @@ type opcode = LOOKUP of string
 | LE
 | GE
 | COND of (opcode list) * (opcode list)
+| PAIR
+| FST
+| SND
 ;;
 
 type table = (string * answer) list
-and answer = Vclos of table * string * control | Int of int | Bool of bool
+and answer = Vclos of table * string * control | Int of int | Bool of bool | Pair of answer * answer
 and stack = answer list
 and environment = table
 and control = opcode list
@@ -91,6 +97,9 @@ let rec compile e = match e with
 | Le(e1, e2) -> (compile e1) @ (compile e2) @ [LE]
 | Ge(e1, e2) -> (compile e1) @ (compile e2) @ [GE]
 | IfTE(e1, e2, e3) -> (compile e1) @ [COND((compile e2), (compile e3))]
+| Pair(e1, e2) -> (compile e1) @ (compile e2) @ [PAIR]
+| Fst(e1) -> (compile e1) @ [FST]
+| Snd(e1) -> (compile e1) @ [SND]
 ;;
 
 
@@ -124,6 +133,9 @@ let rec secd = function
 | (Int(n2)::Int(n1)::s, e, LE::c, d) -> secd(Bool(n1 <= n2)::s, e, c, d)
 | (Int(n2)::Int(n1)::s, e, GE::c, d) -> secd(Bool(n1 >= n2)::s, e, c, d)
 | (Bool(b)::s, e, COND(c1, c2)::c, d) -> if b then secd(s, e, c1 @ c, d) else secd(s, e, c2 @ c, d)
+| (y::x::s, e, PAIR::c, d) -> secd(Pair(x, y)::s, e, c, d)
+| (Pair(x, y)::s, e, FST::c, d) -> secd(x::s, e, c, d)
+| (Pair(x, y)::s, e, SND::c, d) -> secd(y::s, e, c, d)
 | _ -> raise InvalidOperation
 ;;
 
@@ -140,6 +152,7 @@ let e4 = App(Abs("x", Add(Var "x", Int 7)), Int 3);;
 let e5 = And(Bool(true), Bool(false));;
 let e6 = Le(Int(3), Int(4));;
 let e7 = IfTE(Le(Int(3), Int(4)), Int(3), Int(4));;
+let e8 = Fst(Pair(Int(3), Bool(true)));;
 
 
 let c1 = compile e1;;
@@ -149,6 +162,7 @@ let c4 = compile e4;;
 let c5 = compile e5;;
 let c6 = compile e6;;
 let c7 = compile e7;;
+let c8 = compile e8;;
 
 
 exec c1;;
@@ -159,11 +173,15 @@ exec c4;;
 exec c5;;
 exec c6;;
 exec c7;;
+exec c8;;
 
 let exp1 : exp = Var("y");;                           (* y *)
 let _env = [("y", Int(4))];;                          (* y = 4 *)
 let exp2 : exp = Abs("x", Add(Var "x", Int 7));;      (* \x. (x + 7) *)
 let exp3 : exp = Pow(exp1, Int(2));;                  (* y^2 = 16 *)
 let exp4 : exp = Gt(Int(3), Int(4));;                 (* 3 > 4 = false *)
-let expn : exp = IfTE(exp4, exp1, App(exp2, exp3));;  (* exp4 = false => APP( x + 7 where x is 16*)
+let exp5 : exp = IfTE(exp4, exp1, App(exp2, exp3));;  (* exp4 = false => APP( x + 7 where x is 16*)
+let expn : exp = Fst(Pair(exp5, Bool(true)));;        (* Fst(exp5, true) => exp5*)
 secd ([], _env, compile expn, []);;                   (* returns 23 as answer *)
+
+
