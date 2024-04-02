@@ -14,6 +14,12 @@ type exp = Var of string
 | And of exp * exp
 | Or of exp * exp
 | Implies of exp * exp
+| Eq of exp * exp
+| Neq of exp * exp
+| Lt of exp * exp
+| Gt of exp * exp
+| Le of exp * exp
+| Ge of exp * exp
 ;;
 
 type answer = INT of int | BOOL of bool
@@ -96,6 +102,38 @@ let implies (cl1, cl2) = match (cl1, cl2) with
   | _ -> raise InvalidOperation
 ;;
 
+let eq (cl1, cl2) = match (cl1, cl2) with
+  (CL (Int i1, env1), CL (Int i2, env2)) -> CL (Bool (i1 = i2), [])
+| (CL (Bool b1, env1), CL (Bool b2, env2)) -> CL (Bool (b1 = b2), [])
+| _ -> raise InvalidOperation
+;;
+
+let neq (cl1, cl2) = match (cl1, cl2) with
+  (CL (Int i1, env1), CL (Int i2, env2)) -> CL (Bool (i1 <> i2), [])
+| (CL (Bool b1, env1), CL (Bool b2, env2)) -> CL (Bool (b1 <> b2), [])
+| _ -> raise InvalidOperation
+;;
+
+let lt (cl1, cl2) = match (cl1, cl2) with
+  (CL (Int i1, env1), CL (Int i2, env2)) -> CL (Bool (i1 < i2), [])
+| _ -> raise InvalidOperation
+;;
+
+let gt (cl1, cl2) = match (cl1, cl2) with
+  (CL (Int i1, env1), CL (Int i2, env2)) -> CL (Bool (i1 > i2), [])
+| _ -> raise InvalidOperation
+;;
+
+let le (cl1, cl2) = match (cl1, cl2) with
+  (CL (Int i1, env1), CL (Int i2, env2)) -> CL (Bool (i1 <= i2), [])
+| _ -> raise InvalidOperation
+;;
+
+let ge (cl1, cl2) = match (cl1, cl2) with
+  (CL (Int i1, env1), CL (Int i2, env2)) -> CL (Bool (i1 >= i2), [])
+| _ -> raise InvalidOperation
+;;
+
 let rec krivine cl s = match cl with
 | CL (Var x, env) -> krivine (lookup (Var(x), env)) s
 | CL (Abs (x, e), env) -> 
@@ -115,6 +153,12 @@ let rec krivine cl s = match cl with
 | CL (And (e1, e2), env) -> krivine (and_op ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
 | CL (Or (e1, e2), env) -> krivine (or_op ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
 | CL (Implies (e1, e2), env) -> krivine (implies ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
+| CL (Eq (e1, e2), env) -> krivine (eq ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
+| CL (Neq (e1, e2), env) -> krivine (neq ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
+| CL (Lt (e1, e2), env) -> krivine (lt ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
+| CL (Gt (e1, e2), env) -> krivine (gt ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
+| CL (Le (e1, e2), env) -> krivine (le ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
+| CL (Ge (e1, e2), env) -> krivine (ge ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
 ;;
 
 let rec exec prog env = match prog with
@@ -171,3 +215,15 @@ let e18 = Implies(e17, e15);;
 exec [e18] [];;
 
 
+let e19 = Eq(Int(7), Int(7));;
+exec [e19] [];;
+let e20 = Neq(Int(7), Int(-7));;
+exec [e20] [];;
+let e21 = Lt(Int(7), Int(7));;
+exec [e21] [];;
+let e22 = Gt(Int(8), Int(7));;
+exec [e22] [];;
+let e23 = Le(Int(7), Int(7));;
+exec [e23] [];;
+let e24 = Ge(Int(8), Int(7));;
+exec [e24] [];;
