@@ -20,9 +20,13 @@ type exp = Var of string
 | Gt of exp * exp
 | Le of exp * exp
 | Ge of exp * exp
+| IfTE of exp * exp * exp
+(* | Pair of exp * exp
+| Fst of exp
+| Snd of exp *)
 ;;
 
-type answer = INT of int | BOOL of bool
+type answer = INT of int | BOOL of bool | PAIR of answer * answer
 and closure = CL of exp * environmentCLOS
 and stackCLOS = closure list
 and environmentCLOS = (exp * closure) list
@@ -159,6 +163,11 @@ let rec krivine cl s = match cl with
 | CL (Gt (e1, e2), env) -> krivine (gt ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
 | CL (Le (e1, e2), env) -> krivine (le ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
 | CL (Ge (e1, e2), env) -> krivine (ge ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
+| CL (IfTE (e1, e2, e3), env) -> 
+    (match krivine (CL (e1, env)) [] with
+    | CL (Bool b, _) -> if b then (krivine (CL (e2, env)) s) else (krivine (CL (e3, env)) s)
+    | _ -> raise InvalidOperation
+    )
 ;;
 
 let rec exec prog env = match prog with
@@ -167,6 +176,7 @@ let rec exec prog env = match prog with
   (match cl with
   | CL (Int i, _) -> INT i
   | CL (Bool b, _) -> BOOL b
+  (* | CL (Pair (e1, e2), _) -> PAIR (exec [e1] env, exec [e2] env) *)
   | _ -> raise InvalidClosure
   )
 | _ -> raise EmptyProgram
@@ -227,3 +237,15 @@ let e23 = Le(Int(7), Int(7));;
 exec [e23] [];;
 let e24 = Ge(Int(8), Int(7));;
 exec [e24] [];;
+
+
+let e25 = IfTE(Bool(false), Int(7), Int(13));;
+exec [e25] [];;
+
+
+(* let e26 = Pair(Int(7), Int(13));;
+exec [e26] [];;
+let e27 = Fst(e26);;
+exec [e27] [];;
+let e28 = Snd(e26);;
+exec [e28] [];; *)
