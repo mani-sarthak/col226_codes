@@ -2,6 +2,7 @@ type exp = Var of string
 | Abs of string * exp
 | App of exp * exp
 | Int of int
+| Absolute of exp
 | Add of exp * exp
 ;;
 
@@ -33,7 +34,11 @@ let absApp (cl, s) = match (cl, s) with
 	| _ -> raise InvalidOperation
 ;;
 
-let add (c1, c2) = match (c1, c2) with
+let absolute cl = match cl with
+  | CL (Int n, env) -> CL (Int(if n > 0 then n else ((-1)*n)), [])
+  | _ -> raise InvalidOperation
+
+let add (cl1, cl2) = match (cl1, cl2) with
   (CL (Int i1, env1), CL (Int i2, env2)) -> CL (Int (i1+i2), [])
   | _ -> raise InvalidOperation
 ;;
@@ -45,6 +50,7 @@ let rec krivine cl s = match cl with
     krivine cl' s'
 | CL (App (e1, e2), env) -> krivine (CL (e1, env)) (CL (e2, env)::s)
 | CL (Int i, env) -> CL (Int i, env)
+| CL (Absolute e, env) -> krivine (absolute (krivine (CL (e, env)) [])) s
 | CL (Add (e1, e2), env) -> krivine (add ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s 
 ;;
 
@@ -68,3 +74,5 @@ let e3 = Add(Int(7), Int(13));;
 exec [e3] [];;
 let e4 = Add(Int(7), Var("x"));;
 exec [e4] [(Var("x"), CL(Int(30), []))];;
+let e5 = Absolute(Int(-7));;
+exec [e5] [];;
