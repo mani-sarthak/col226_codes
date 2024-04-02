@@ -9,11 +9,14 @@ type exp = Var of string
 | Div of exp * exp
 | Mod of exp * exp
 | Pow of exp * exp
+| Bool of bool
+| Not of exp
+| And of exp * exp
+| Or of exp * exp
+| Implies of exp * exp
 ;;
 
-type answer = Int of int
-and stack = answer list
-and program = exp list
+type answer = INT of int | BOOL of bool
 and closure = CL of exp * environmentCLOS
 and stackCLOS = closure list
 and environmentCLOS = (exp * closure) list
@@ -74,6 +77,24 @@ let pow (cl1, cl2) = match (cl1, cl2) with
   | _ -> raise InvalidOperation
 ;;
 
+let not_op cl = match cl with
+  CL (Bool b, env) -> CL (Bool (not b), [])
+  | _ -> raise InvalidOperation
+
+let and_op (cl1, cl2) = match (cl1, cl2) with
+  (CL (Bool b1, env1), CL (Bool b2, env2)) -> CL (Bool (b1 && b2), [])
+  | _ -> raise InvalidOperation
+;;
+
+let or_op (cl1, cl2) = match (cl1, cl2) with
+  (CL (Bool b1, env1), CL (Bool b2, env2)) -> CL (Bool (b1 || b2), [])
+  | _ -> raise InvalidOperation
+;;
+
+let implies (cl1, cl2) = match (cl1, cl2) with
+  (CL (Bool b1, env1), CL (Bool b2, env2)) -> CL (Bool ((not b1) || b2), [])
+  | _ -> raise InvalidOperation
+;;
 
 let rec krivine cl s = match cl with
 | CL (Var x, env) -> krivine (lookup (Var(x), env)) s
@@ -89,13 +110,19 @@ let rec krivine cl s = match cl with
 | CL (Div (e1, e2), env) -> krivine (div ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
 | CL (Mod (e1, e2), env) -> krivine (modulus ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
 | CL (Pow (e1, e2), env) -> krivine (pow ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
+| CL (Bool b, env) -> CL (Bool b, env)
+| CL (Not e, env) -> krivine (not_op (krivine (CL (e, env)) [])) s
+| CL (And (e1, e2), env) -> krivine (and_op ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
+| CL (Or (e1, e2), env) -> krivine (or_op ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
+| CL (Implies (e1, e2), env) -> krivine (implies ((krivine (CL (e1, env)) []), (krivine (CL (e2, env)) []))) s
 ;;
 
 let rec exec prog env = match prog with
 | p::prog' ->
   let cl = krivine (CL (p, env)) [] in
   (match cl with
-  | CL (Int i, _) -> Int i
+  | CL (Int i, _) -> INT i
+  | CL (Bool b, _) -> BOOL b
   | _ -> raise InvalidClosure
   )
 | _ -> raise EmptyProgram
@@ -125,4 +152,22 @@ let e10 = Div(e9, Int(11));;
 exec [e10] [];;
 let e11 = Pow(e10, Int(2));;
 exec [e11] [];;
+
+
+
+let e12 = Bool(true);;
+exec [e12] [];;
+let e13 = Not(Bool(true));;
+exec [e13] [];;
+let e14 = And(Bool(true), e13);;
+exec [e14] [];;
+let e15 = Or(Bool(true), e13);;
+exec [e15] [];;
+let e16 = Implies(Bool(true), e13);;
+exec [e16] [];;
+let e17 = Implies(Bool(false), e13);;
+exec [e17] [];;
+let e18 = Implies(e17, e15);;
+exec [e18] [];;
+
 
