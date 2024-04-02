@@ -24,6 +24,7 @@ type exp = Var of string
 | Pair of exp * exp
 | Fst of exp
 | Snd of exp
+| Case of exp * (string * exp) list
 ;; 
 
 type opcode = LOOKUP of string
@@ -53,6 +54,7 @@ type opcode = LOOKUP of string
 | PAIR
 | FST
 | SND
+| CASE of (string * opcode list) list
 ;;
 
 type table = (string * answer) list
@@ -106,7 +108,7 @@ let rec compile e = match e with
 
 
 let rec secd = function
-| (x::s, e, [], _) -> x
+| (x::s, e, [], d) -> x
 | (s, e, LOOKUP(x)::c, d) -> secd((lookup x e)::s, e, c, d)
 | (s, e, CLOS(x, c1)::c, d) -> secd((Vclos(e, x, c1))::s, e, c, d)
 | (x::Vclos(e1, x1, c1)::s, e, APP::c, d) -> secd([], (x1, x)::e1, c1, (s, e, c)::d)
@@ -180,8 +182,8 @@ let _env = [("y", Int(4))];;                          (* y = 4 *)
 let exp2 : exp = Abs("x", Add(Var "x", Int 7));;      (* \x. (x + 7) *)
 let exp3 : exp = Pow(exp1, Int(2));;                  (* y^2 = 16 *)
 let exp4 : exp = Gt(Int(3), Int(4));;                 (* 3 > 4 = false *)
-let exp5 : exp = IfTE(exp4, exp1, App(exp2, exp3));;  (* exp4 = false => APP( x + 7 where x is 16*)
-let expn : exp = Fst(Pair(exp5, Bool(true)));;        (* Fst(exp5, true) => exp5*)
+let exp5 : exp = IfTE(exp4, exp1, App(exp2, exp3));;  (* exp4 = false => APP( x + 7 where x is 16 *)
+let expn : exp = Fst(Pair(exp5, Bool(true)));;        (* Fst(exp5, true) => exp5 *)
 secd ([], _env, compile expn, []);;                   (* returns 23 as answer *)
 
 

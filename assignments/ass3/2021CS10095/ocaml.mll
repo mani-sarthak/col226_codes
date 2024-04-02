@@ -10,7 +10,8 @@ type token =
 |  Keyword of string
 |  StringConstant of string
 |  StringOp of char
-|  Identifier of string          Comma of char
+|  Identifier of string          
+|  Comma of char
 |  Semicolon of char    
 |  UndefinedChar of char
 |  Undefined of string
@@ -50,7 +51,6 @@ rule read = parse
 {
     let scan s = read (Lexing.from_string s)
 }
-
 
 
 
@@ -123,7 +123,5 @@ scan "@specialChar" ;;
 scan "123abc" ;;
 scan "@specialChar" ;;
 scan "letx" ;;
-
-
-*)
+ *)
 

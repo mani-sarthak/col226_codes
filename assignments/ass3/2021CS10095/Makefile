@@ -9,8 +9,6 @@ lex: lexer.l
 
 ocamllex: ocaml.mll
 	ocamllex ocaml.mll
-	ocamlc -o ocamllex ocaml.ml check.txt
-	./ocamllex > out.txt
 
 c: main.ml new.mll
 	ocaml new.mll

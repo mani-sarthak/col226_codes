@@ -212,22 +212,22 @@ let sigma2 = [("y", C {node = ("+", 2); children = [V "x"; V "y"]})];;
 let example_tree = V "y";;
 
 
-let result_tree = apply_composed_substs [sigma1] example_tree;;
-assert (result_tree = example_tree);;
+let result_tree1 = apply_composed_substs [sigma1] example_tree;;
+assert (result_tree1 = example_tree);;
 
 
-let result_tree = apply_composed_substs [sigma2] example_tree;;
-assert (result_tree = C {node = ("+", 2); children = [V "x"; V "y"]});;
+let result_tree2 = apply_composed_substs [sigma2] example_tree;;
+assert (result_tree2 = C {node = ("+", 2); children = [V "x"; V "y"]});;
 
 let composed_substs = [ sigma2; sigma1];;
-let result_tree = apply_composed_substs composed_substs example_tree;;
-assert (result_tree = C {node = ("+", 2); children = [C {node = ("1", 0); children = []}; V "y"]})
+let result_tree3 = apply_composed_substs composed_substs example_tree;;
+assert (result_tree3 = C {node = ("+", 2); children = [C {node = ("1", 0); children = []}; V "y"]})
 ;;
 
 
 let composed_substs = [ sigma2; sigma1; sigma2; sigma1];;
-let result_tree = apply_composed_substs composed_substs example_tree;;
-assert (result_tree = C {node = ("+", 2); children = [C {node = ("1", 0); children = []};
+let result_tree4 = apply_composed_substs composed_substs example_tree;;
+assert (result_tree4 = C {node = ("+", 2); children = [C {node = ("1", 0); children = []};
    C {node = ("+", 2); children = [C {node = ("1", 0); children = []}; V "y"]}]})
 ;;
 
@@ -329,3 +329,34 @@ Proof Sketch :-
       Hence we say mirror(sigma) is a mgu of mirror(t) and mirror(u).
 
  *)
+
+
+
+let mirror_mgu lst =
+  List.map (fun (s, t) -> (s, mirror t)) lst 
+;;
+
+let t = V "x";;
+let u = C {node = ("+", 2); children = [V "a";  V "b"]};;
+assert(mirror_mgu (mgu u t) = mgu (mirror t) (mirror u));;
+
+
+let s5 = C { node = ("f", 3); children = [V "x"; V "y"; V "z"] };;
+let t5 = C { node = ("f", 3); children = [V "a"; V "b"; V "c"] };;
+assert (mgu s5 t5 = [ ("x", V "a");("y", V "b"); ("z", V "c")]);;
+
+
+let z_node = V("z")
+let node_1 = C {node = ("1",0) ; children = []}
+let node_2 = C {node = ("2",0) ; children = []}
+let node_3 = C {node = ("3",0) ; children = []}
+let node_4 = C {node = ("4",0) ; children = []}
+
+let op2_symbol = ("op2" , 2)
+let op3_symbol = ("op3" , 3)
+let op4_symbol = ("op4" , 4)
+
+let t1 = C{node = op2_symbol ; children = [z_node ; node_1]}
+let t3 = C{node = op4_symbol ; children = [node_1 ; node_2 ; node_3 ; node_4]}  
+let t6 = C{node = op2_symbol ; children = [t3 ; node_1]}
+
