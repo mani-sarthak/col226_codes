@@ -21,12 +21,10 @@ type exp = Var of string
 | Le of exp * exp
 | Ge of exp * exp
 | IfTE of exp * exp * exp
-(* | Pair of exp * exp
-| Fst of exp
-| Snd of exp *)
+| Pair of exp * exp
 ;;
 
-type answer = INT of int | BOOL of bool | PAIR of answer * answer
+type answer = INT of int | BOOL of bool 
 and closure = CL of exp * environmentCLOS
 and stackCLOS = closure list
 and environmentCLOS = (exp * closure) list
@@ -176,7 +174,6 @@ let rec exec prog env = match prog with
   (match cl with
   | CL (Int i, _) -> INT i
   | CL (Bool b, _) -> BOOL b
-  (* | CL (Pair (e1, e2), _) -> PAIR (exec [e1] env, exec [e2] env) *)
   | _ -> raise InvalidClosure
   )
 | _ -> raise EmptyProgram
