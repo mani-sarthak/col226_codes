@@ -56,7 +56,7 @@ atom:
   | term LEQ term                               {A("<=", [$1; $3])}
   | term GEQ term                               {A(">=", [$1; $3])}
   | OFC                                         {A("_ofc", [])}
-  | NOT atom                                    { Not($2) }
+  // | NOT atom                                    { Not($2) }
 ;
 
 terms:

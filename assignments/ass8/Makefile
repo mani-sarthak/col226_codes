@@ -6,8 +6,9 @@ ass: main.ml parser.mly types.ml lexer.mll input.pl
 	ocamllex lexer.mll
 	ocamlc -c lexer.ml 
 	ocamlc -c main.ml  
-	ocamlc -o ass types.cmo parser.cmo lexer.cmo main.cmo
-	./ass < input.pl > output.txt	
+	ocamlfind ocamlc -linkpkg -package unix -o ass types.cmo parser.cmo lexer.cmo main.cmo
+
+
 
 clean:
 	-rm *.cmi *.cmo output.txt lexer.ml ass parser.ml parser.mli tokens.txt parser.output
