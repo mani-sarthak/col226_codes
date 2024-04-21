@@ -14,6 +14,7 @@ type exp = Num of int | Bl of myBool
 | IfTE of exp * exp * exp
 | Pair of exp * exp
 | Fst of exp | Snd of exp
+(* | Abs of string * exp | App of exp * exp *)
 ;;
 let test1 = Plus (Times (Num 3, Num 4), Times (Num 5, Num 6));;
 let test2 = Or (Not (Bl T), And (Bl T, Or(Bl F, Bl T)));;
