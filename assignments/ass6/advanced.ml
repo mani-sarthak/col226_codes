@@ -24,7 +24,6 @@ type exp = Var of string
 | Pair of exp * exp
 | Fst of exp
 | Snd of exp
-| Case of exp * (string * exp) list
 ;; 
 
 type opcode = LOOKUP of string
@@ -54,7 +53,6 @@ type opcode = LOOKUP of string
 | PAIR
 | FST
 | SND
-| CASE of (string * opcode list) list
 ;;
 
 type table = (string * answer) list
@@ -187,3 +185,13 @@ let expn : exp = Fst(Pair(exp5, Bool(true)));;        (* Fst(exp5, true) => exp5
 secd ([], _env, compile expn, []);;                   (* returns 23 as answer *)
 
 
+
+
+(* Final Testcases *)
+(* let result1 = secd([], [("x", Int(1))], compile (Var "y"), []);; *)
+let result2 = secd([], [("x", Int(1))], compile (Var "x"), []);;
+let result3 = secd([], [("x", Vclos([("y", Int(2))], "x", [LOOKUP "y"; RET])); ("y", Int(1))], compile (App(Var("x"), Var("y"))), []);;
+let result4 = secd([], [("x", Int(1))], compile (App(Abs("x", Var("x")), Var("x"))), []);;
+let result5 = secd([], [("x", Int(1)); ("y", Int(2))], compile (App(Abs("y", Var("y")), Var("x"))), []);;
+let result6 = secd([], [("x", Int(1)); ("y", Int(2))], compile (App(Abs("y", Abs("x", Var("y"))), Var("x"))), []);;
+let result7 = secd([], [("x", Int(1)); ("y", Int(2))], compile (App(Abs("x", App(Abs("y", Var("y")), Var("x"))), Var("x"))), []);;

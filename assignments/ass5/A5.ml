@@ -360,3 +360,23 @@ let t1 = C{node = op2_symbol ; children = [z_node ; node_1]}
 let t3 = C{node = op4_symbol ; children = [node_1 ; node_2 ; node_3 ; node_4]}  
 let t6 = C{node = op2_symbol ; children = [t3 ; node_1]}
 
+let sig_test1 = [("0", 0); ("1", 0); ("0", 1)];;
+let result_sig_check1 = check_sig sig_test1;;
+
+
+let sig2 = [("0", 0); ("1", 0); ("+", 2)]
+let t = C {node = ("+", 2); children = [V "x"; V "y"; V "z"]}
+let result_wftree = wftree sig2 t
+
+
+let t2 = C {node = ("+", 2); children = [V "x"; V "y"]}
+let result_ht_t2 = ht t2
+
+let result_size_t2 = size t2
+
+let t3 = C {node = ("+", 2); children = [V "z"; t2]}
+let result_mirror_t3 = mirror t3
+
+let tree1 = V "x"
+let tree2 = C {node = ("+", 2); children = [V "x"; V "y"]}
+let result_mgu_tree1_tree2 = mgu tree1 tree2

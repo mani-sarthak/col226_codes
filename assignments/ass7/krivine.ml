@@ -21,7 +21,6 @@ type exp = Var of string
 | Le of exp * exp
 | Ge of exp * exp
 | IfTE of exp * exp * exp
-| Pair of exp * exp
 ;;
 
 type answer = INT of int | BOOL of bool 
@@ -240,9 +239,24 @@ let e25 = IfTE(Bool(false), Int(7), Int(13));;
 exec [e25] [];;
 
 
-(* let e26 = Pair(Int(7), Int(13));;
-exec [e26] [];;
-let e27 = Fst(e26);;
+(* Final Testcases *)
+let e26 = Var "z";;
+exec [e26] [(Var "z", CL (Int 3, []))];;
+
+let e27 = Add(Add(Int(2),Int(3)),Add(Int(2),Int(3)));;
 exec [e27] [];;
-let e28 = Snd(e26);;
-exec [e28] [];; *)
+
+let e28 = App(Abs("x",Add(Var("x"),Int(1))),Int(2));;
+exec [e28] [];;
+
+let e29 = App(Abs("x", Mul(Var("x"),Add(Var("x"),Int(1)))),Int(2));;
+exec [e29] [];;
+
+let e30 = App(Abs("x", App(Abs("d",Mul(Var("d"),Int(2))),Int(2))),Int(2));;
+exec [e30] [];;
+
+let e31 = IfTE(Gt(Int(8),Int(2)),App(Abs("x", Div(Var("x"),Int(2))),Int(2)),App(Abs("x", Mul(Var("x"),Add(Var("x"),Int(1)))),Int(2)));;
+exec [e31] [];;
+
+let e32 = IfTE(Gt(Int(8),Int(2)),Add(Int(1), Int(2)), Div(Int(9), Int(0)));;
+exec [e32] [];;
